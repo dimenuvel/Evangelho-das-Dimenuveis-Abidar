@@ -110,3 +110,12 @@ npm run build:apk
 - **Projeto**: Evangelho Dimenúveis
 - **E-mail**: [samuel.tiem@proton.me](mailto:samuel.tiem@proton.me?subject=Abidar%20-%20The%20Cosmic%20Carpet%20Ride)
 - **Licença**: MIT
+
+## Destinos Evangelho das Dimenúveis 
+- **Site:** https://dimenuvel.github.io/Evangelho-das-Dimenuveis-site/
+- **Aplicativo Online:** https://dimenuveis.ai.studio/
+- **Aplicativo Android:** https://github.com/dimenuvel/Evangelho-das-Dimenuveis
+- **Laboratório de Som:** https://github.com/dimenuvel/Evangelho-das-Dimenuveis-Som
+- **Abida O Jogo:** https://github.com/dimenuvel/Evangelho-das-Dimenuveis-Abida
+- **🧘 Abidar - The Cosmic Carpet Ride:** https://github.com/dimenuvel/Evangelho-das-Dimenuveis-Abidar // https://abidar-the-cosmic-carpet-ride.ai.studio/ 
+
