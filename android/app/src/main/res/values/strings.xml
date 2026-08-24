@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Abidar - The Cosmic Carpet Ride</string>
+    <string name="title_activity_main">Abidar - The Cosmic Carpet Ride</string>
+    <string name="package_name">com.evangelho.abidar</string>
+    <string name="custom_url_scheme">com.evangelho.abidar</string>
+</resources>

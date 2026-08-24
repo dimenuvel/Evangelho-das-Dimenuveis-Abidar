@@ -1,0 +1,6 @@
+{
+  "name": "Abidar - The Cosmic Carpet Ride",
+  "description": "A 16-bit retro cosmic carpet arcade game where you control The Dude meditating on a flying carpet through surreal cosmic realms.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
