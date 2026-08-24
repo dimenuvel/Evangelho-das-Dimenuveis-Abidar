@@ -2,6 +2,8 @@
 
 https://github.com/dimenuvel/Evangelho-das-Dimenuveis-Abidar/releases/tag/v1.0
 
+**Online**: https://abidar-the-cosmic-carpet-ride.ai.studio/
+
 > *"MANTENHA A PRESENÇA — VOCÊ NUNCA FOI A LUGAR NENHUM"*
 
 **Abidar - The Cosmic Carpet Ride** é um jogo arcade estilo retro 16-bits ambientado nas dimensões místicas do cosmos. O jogador controla **"O Cara"** em seu tapete voador intergaláctico, desviando de perigos estelares, coletando itens espirituais, enfrentando chefes cósmicos e buscando a iluminação plena através da serenidade e presença.
