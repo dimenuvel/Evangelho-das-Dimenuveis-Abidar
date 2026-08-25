@@ -26,8 +26,8 @@ export const STAGES: StageConfig[] = [
   {
     id: 1,
     title: 'STAGE 1 — THE MATERIAL WORLD',
-    subtitle: 'Dark Cosmic Cityscape',
-    targetDistance: 4500,
+    subtitle: '1 Minuto — Ascenda pelo Plano Astral',
+    targetDistance: 6300, // 60s (1 min) @ scrollSpeed 3.5 (105 dist/s)
     scrollSpeed: 3.5,
     bgGradStart: '#0d0826',
     bgGradEnd: '#1e0c38',
@@ -40,8 +40,8 @@ export const STAGES: StageConfig[] = [
   {
     id: 2,
     title: 'STAGE 2 — THE ELEMENTAL CURRENT',
-    subtitle: 'Fire, Air, Water & Earth Currents',
-    targetDistance: 6000,
+    subtitle: '2 Minutos — Correntes de Fogo, Ar, Água e Terra',
+    targetDistance: 14400, // 120s (2 min) @ scrollSpeed 4.0 (120 dist/s)
     scrollSpeed: 4.0,
     bgGradStart: '#14062e',
     bgGradEnd: '#2e0a42',
@@ -54,8 +54,8 @@ export const STAGES: StageConfig[] = [
   {
     id: 3,
     title: 'STAGE 3 — THE VOID',
-    subtitle: 'Deep Void Space & Sacred Sounds',
-    targetDistance: 8000,
+    subtitle: '3 Minutos — Espaço Profundo & Sons Sagrados',
+    targetDistance: 24300, // 180s (3 min) @ scrollSpeed 4.5 (135 dist/s)
     scrollSpeed: 4.5,
     bgGradStart: '#080018',
     bgGradEnd: '#12002b',
@@ -68,8 +68,8 @@ export const STAGES: StageConfig[] = [
   {
     id: 4,
     title: 'STAGE 4 — THE SPIRAL',
-    subtitle: 'Surreal Galaxies & Golden Spirals',
-    targetDistance: 10000,
+    subtitle: '4 Minutos — Galáxias Surreais & Espirais Douradas',
+    targetDistance: 36000, // 240s (4 min) @ scrollSpeed 5.0 (150 dist/s)
     scrollSpeed: 5.0,
     bgGradStart: '#1d003b',
     bgGradEnd: '#3b0042',
@@ -82,8 +82,8 @@ export const STAGES: StageConfig[] = [
   {
     id: 5,
     title: 'STAGE 5 — THE PLEROMA',
-    subtitle: 'Enter the Great Void Spiral & Claim Victory',
-    targetDistance: 9000,
+    subtitle: '5 Minutos — Entre na Espiral do Vazio & Vença',
+    targetDistance: 49500, // 300s (5 min) @ scrollSpeed 5.5 (165 dist/s)
     scrollSpeed: 5.5,
     bgGradStart: '#26004d',
     bgGradEnd: '#550066',
@@ -161,6 +161,7 @@ export class GameEngine {
 
   public stars: StarFieldLayer[] = [];
   public planets: ParallaxPlanet[] = [];
+  private smoothedVy: number = 0;
 
   public bossState: BossState = {
     active: false,
@@ -260,13 +261,36 @@ export class GameEngine {
 
   private initStarfield() {
     this.stars = [];
-    for (let i = 0; i < 90; i++) {
+    // Deep layer: Far stars (slow, small, dark blue/gray)
+    for (let i = 0; i < 35; i++) {
       this.stars.push({
         x: Math.random() * this.width,
         y: Math.random() * this.height,
-        speed: 0.5 + Math.random() * 2.0,
-        size: Math.random() > 0.8 ? 2 : 1,
-        color: Math.random() > 0.5 ? '#ffffff' : Math.random() > 0.5 ? '#ffd700' : '#88e5ff',
+        speed: 0.35 + Math.random() * 0.35,
+        size: 1,
+        color: Math.random() > 0.5 ? '#64748b' : '#475569',
+        twinkle: Math.random() * Math.PI * 2
+      });
+    }
+    // Mid layer: Medium stars (cyan/white)
+    for (let i = 0; i < 40; i++) {
+      this.stars.push({
+        x: Math.random() * this.width,
+        y: Math.random() * this.height,
+        speed: 0.9 + Math.random() * 0.8,
+        size: Math.random() > 0.85 ? 2 : 1,
+        color: Math.random() > 0.5 ? '#e2e8f0' : '#88e5ff',
+        twinkle: Math.random() * Math.PI * 2
+      });
+    }
+    // Foreground layer: Fast stars (bright gold/cyan, streaking on speed)
+    for (let i = 0; i < 25; i++) {
+      this.stars.push({
+        x: Math.random() * this.width,
+        y: Math.random() * this.height,
+        speed: 2.0 + Math.random() * 1.5,
+        size: Math.random() > 0.6 ? 2 : 1,
+        color: Math.random() > 0.5 ? '#ffd700' : '#00ffff',
         twinkle: Math.random() * Math.PI * 2
       });
     }
@@ -545,15 +569,22 @@ export class GameEngine {
       }
     }
 
+    // Smooth player vertical velocity for silky background camera tracking
+    this.smoothedVy += (this.player.vy - this.smoothedVy) * Math.min(1.0, dt * 10);
+
     // --- PARALLAX & STARFIELD UPDATE ---
+    const speedIntensity = 1.0 + (speedMult - 1.0) * 0.7 + Math.abs(this.player.vy) / 450;
     this.stars.forEach((s) => {
-      s.x -= s.speed * stage.scrollSpeed * speedMult * dt * 15;
-      if (s.x < 0) s.x = this.width;
+      s.x -= s.speed * stage.scrollSpeed * speedMult * speedIntensity * dt * 15;
+      if (s.x < 0) {
+        s.x = this.width + Math.random() * 15;
+        s.y = Math.random() * this.height;
+      }
     });
 
     this.planets.forEach((p) => {
-      p.x -= p.speed * stage.scrollSpeed * speedMult * dt * 10;
-      if (p.x < -100) p.x = this.width + 100;
+      p.x -= p.speed * stage.scrollSpeed * speedMult * (1.0 + (speedMult - 1.0) * 0.5) * dt * 10;
+      if (p.x < -140) p.x = this.width + 140;
     });
 
     // --- SPAWNING OBJECTS ---
@@ -729,8 +760,8 @@ export class GameEngine {
     this.floatingTexts = this.floatingTexts.filter((ft) => ft.alpha > 0);
 
     // --- STAGE COMPLETION & VOID ENTRY MECHANIC ---
-    if (stage.hasBoss && !this.bossState.active && !this.isVictory) {
-      if (this.currentDistance >= stage.targetDistance * 0.8) {
+    if (stage.hasBoss && !this.isVictory) {
+      if (!this.bossState.active && (this.currentDistance >= stage.targetDistance * 0.75 || this.currentDistance >= stage.targetDistance)) {
         this.initBoss();
       }
     }
@@ -1142,10 +1173,10 @@ export class GameEngine {
   private initBoss() {
     this.bossState = {
       active: true,
-      x: this.width * 0.76,
+      x: this.width + 160, // Glides in smoothly from offscreen right!
       y: this.height * 0.5,
-      width: 240,
-      height: 240,
+      width: 260,
+      height: 260,
       health: 100,
       maxHealth: 100,
       phase: 'emerging',
@@ -1155,13 +1186,14 @@ export class GameEngine {
       currentRequiredIndex: 0
     };
     this.voidPinsCollected = 0;
-    this.addFloatingText(this.width / 2, 90, '🌀 THE GREAT VOID SPIRAL APPEARED! 🌀', '#ffd700', 2.0);
-    this.addFloatingText(this.width / 2, 130, '🎳 COLETE 5 PINOS DO VAZIO PARA DESBLOQUEAR A TRANSCENDÊNCIA!', '#00ffff', 1.5);
+    soundEngine.playSpiralActivationSound();
+    this.addFloatingText(this.width / 2, 80, '🌀 THE GREAT VOID SPIRAL HAS ARRIVED! 🌀', '#ffd700', 2.2);
+    this.addFloatingText(this.width / 2, 120, '✨ VOE PARA O CENTRO OU COLETE OS PINOS PARA TRANSCENDER! ✨', '#00ffff', 1.5);
 
-    // Clear any lingering dangerous obstacles so player can collect pins in peace
+    // Clear any lingering dangerous obstacles so player can approach portal cleanly
     this.obstacles = [];
 
-    // Immediately spawn 5 golden glowing Void Bowling Pins nicely placed across the screen!
+    // Immediately spawn 5 golden glowing Void Bowling Pins nicely placed across the screen ahead
     for (let i = 0; i < 5; i++) {
       this.collectibles.push({
         id: Math.random().toString(),
@@ -1169,7 +1201,7 @@ export class GameEngine {
         y: 110 + (i % 3) * 110 + (Math.random() - 0.5) * 30,
         width: 28,
         height: 38,
-        vx: -70,
+        vx: -60,
         vy: 0,
         active: true,
         type: 'bowling_pin',
@@ -1186,12 +1218,16 @@ export class GameEngine {
     this.bossState.phaseTimer += dt;
     this.bossState.pulsate += dt * 2.5;
 
+    // Glide spiral smoothly into view from offscreen right to center-right (576px)
+    const targetX = this.width * 0.72;
+    this.bossState.x += (targetX - this.bossState.x) * Math.min(1.0, dt * 2.2);
+
     // Spiral floats up/down gently at center-right
     this.bossState.y = this.height * 0.5 + Math.sin(this.bossState.pulsate) * 45;
 
     const PINS_REQUIRED = 5;
 
-    // Continuously ensure there are always at least 3 visible Void Bowling Pins on screen ahead of the player!
+    // Continuously ensure there are visible Void Bowling Pins on screen ahead of the player!
     const activePins = this.collectibles.filter(
       (c) => c.active && c.type === 'bowling_pin' && c.x > this.player.x - 40
     );
@@ -1203,7 +1239,7 @@ export class GameEngine {
         y: 80 + Math.random() * (this.height - 160),
         width: 28,
         height: 38,
-        vx: -110 - Math.random() * 30,
+        vx: -100 - Math.random() * 30,
         vy: (Math.random() - 0.5) * 20,
         active: true,
         type: 'bowling_pin',
@@ -1229,26 +1265,33 @@ export class GameEngine {
     // Proximity check between player and Great Void Spiral
     const distToSpiral = Math.hypot(this.player.x - this.bossState.x, this.player.y - this.bossState.y);
 
-    if (this.voidPinsCollected >= PINS_REQUIRED) {
-      // Player has collected 5 void bowling pins! Pull player into spiral when near or automatically after short delay
-      if (distToSpiral < 320 || this.bossState.phaseTimer > 8.0) {
-        // Smoothly draw the Dude towards the center of the Spiral
-        this.player.x += (this.bossState.x - this.player.x) * 3.5 * dt;
-        this.player.y += (this.bossState.y - this.player.y) * 3.5 * dt;
+    // Player enters Great Void if:
+    // 1. Collected 5 void bowling pins
+    // 2. Direct contact with spiral event horizon (< 110px)
+    // 3. Boss timer elapsed or stage target distance exceeded
+    const isTranscendenceReady =
+      this.voidPinsCollected >= PINS_REQUIRED ||
+      distToSpiral < 110 ||
+      this.bossState.phaseTimer > 12.0 ||
+      this.currentDistance >= (STAGES[4]?.targetDistance || 9000) + 500;
 
-        if (distToSpiral < 65) {
-          this.bossState.active = false;
-          this.triggerVoidEntryVictory();
-        }
+    if (isTranscendenceReady) {
+      // Smoothly draw the Dude towards the center of the Spiral
+      this.player.x += (this.bossState.x - this.player.x) * 4.0 * dt;
+      this.player.y += (this.bossState.y - this.player.y) * 4.0 * dt;
+
+      if (distToSpiral < 55) {
+        this.bossState.active = false;
+        this.triggerVoidEntryVictory();
       }
     } else {
-      // If player comes close without enough void pins, display prompt
-      if (distToSpiral < 180 && Math.random() < 0.04) {
+      // Prompt player on approaching
+      if (distToSpiral < 200 && Math.random() < 0.04) {
         this.addFloatingText(
           this.player.x,
           this.player.y - 35,
-          `🎳 COLETE MAIS ${PINS_REQUIRED - this.voidPinsCollected} PINOS DO VAZIO!`,
-          '#ff9900',
+          `🌀 VOE PARA O CENTRO DO ESPIRAL OU COLETE OS PINOS!`,
+          '#00ffff',
           1.3
         );
       }
@@ -1274,18 +1317,20 @@ export class GameEngine {
 
   private render() {
     const stage = this.getCurrentStageConfig();
+    const speedMult = this.player ? (this.player.speedBoostActive ? 1.5 : this.player.timeSlowActive ? 0.6 : 1.0) : 1.0;
+    const vy = this.smoothedVy || 0;
 
     // Clear
     this.ctx.clearRect(0, 0, this.width, this.height);
 
     // 1. Space background
-    pixelRenderer.drawSpaceBackground(this.ctx, this.width, this.height, stage, this.gameTime);
+    pixelRenderer.drawSpaceBackground(this.ctx, this.width, this.height, stage, this.gameTime, vy, speedMult);
 
     // 2. Stars
-    pixelRenderer.drawStars(this.ctx, this.stars, this.width, this.gameTime);
+    pixelRenderer.drawStars(this.ctx, this.stars, this.width, this.gameTime, vy, speedMult);
 
     // 3. Parallax Planets & Temples
-    pixelRenderer.drawParallaxPlanets(this.ctx, this.planets, this.gameTime);
+    pixelRenderer.drawParallaxPlanets(this.ctx, this.planets, this.gameTime, vy, speedMult);
 
     // 4. Boss Spiral
     if (this.bossState.active) {
@@ -1304,7 +1349,7 @@ export class GameEngine {
     pixelRenderer.drawFloatingTexts(this.ctx, this.floatingTexts);
 
     // 8. Retro HUD
-    pixelRenderer.drawHUD(this.ctx, this.width, this.height, this.player, stage, this.gameTime);
+    pixelRenderer.drawHUD(this.ctx, this.width, this.height, this.player, stage, this.gameTime, this.currentDistance);
   }
 
   public destroy() {

@@ -38,6 +38,7 @@ export const GameCanvas: React.FC<Props> = ({
   const [coffeesCount, setCoffeesCount] = useState(0);
   const [isAbiding, setIsAbiding] = useState(false);
 
+  const [currentActiveStageIndex, setCurrentActiveStageIndex] = useState(stageIndex);
   const [showNameEntry, setShowNameEntry] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
@@ -75,6 +76,7 @@ export const GameCanvas: React.FC<Props> = ({
         setIsGameOver(engine.isGameOver);
         setIsStageClear(engine.isStageClear);
         setIsVictory(engine.isVictory);
+        setCurrentActiveStageIndex(engine.currentStageIndex);
 
         if (engine.player) {
           setScore(engine.player.score);
@@ -167,7 +169,7 @@ export const GameCanvas: React.FC<Props> = ({
     setIsStageClear(false);
     setIsVictory(false);
     if (engineRef.current) {
-      engineRef.current.startNewGame(stageIndex, isInfiniteMode);
+      engineRef.current.startNewGame(currentActiveStageIndex, isInfiniteMode);
     }
   };
 
@@ -176,6 +178,7 @@ export const GameCanvas: React.FC<Props> = ({
     hasFiredConfettiRef.current = false;
     if (engineRef.current) {
       engineRef.current.nextStage();
+      setCurrentActiveStageIndex(engineRef.current.currentStageIndex);
     }
   };
 
@@ -329,7 +332,7 @@ export const GameCanvas: React.FC<Props> = ({
               FASE CONCLUÍDA!
             </h2>
             <p className="text-purple-200 text-[11px] sm:text-xs">
-              Você manteve a presença e atravessou {STAGES[stageIndex].title}.
+              Você manteve a presença e atravessou {STAGES[currentActiveStageIndex]?.title || 'A FASE'}.
             </p>
 
             <div className="bg-black/60 p-2.5 sm:p-3.5 rounded-sm border-2 border-white/10 text-left space-y-1.5 text-xs shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]">
@@ -496,7 +499,7 @@ export const GameCanvas: React.FC<Props> = ({
         <NameEntryModal
           score={score}
           presencePoints={presencePoints}
-          mode={isInfiniteMode ? 'INFINITE' : `STAGE ${stageIndex + 1}`}
+          mode={isInfiniteMode ? 'INFINITE' : `STAGE ${currentActiveStageIndex + 1}`}
           onSaved={(updatedScores) => {
             setHighScoresList(updatedScores);
             setHasPromptedName(true);

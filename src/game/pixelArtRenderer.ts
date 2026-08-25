@@ -148,7 +148,9 @@ export class PixelArtRenderer {
     width: number,
     height: number,
     stage: StageConfig,
-    gameTime: number
+    gameTime: number,
+    playerVy: number = 0,
+    speedMult: number = 1.0
   ) {
     // Gradient Sky
     const gradStart = (stage && stage.bgGradStart) || '#0d0826';
@@ -159,13 +161,19 @@ export class PixelArtRenderer {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
 
-    // Nebulae (swirling glowing clouds in deep background)
+    // Nebulae with subtle parallax shift based on player movement velocity & speed multiplier
     const nebulaColors = (stage && stage.nebulaColors) || ['rgba(80, 20, 140, 0.3)', 'rgba(20, 60, 160, 0.25)'];
     ctx.save();
+    
+    // Deepest layer parallax vertical drift (~0.03 multiplier)
+    const nebulaOffsetY = -playerVy * 0.03;
+    // Speed intensity pulse rate shift when player is moving fast or boosting
+    const speedPulse = 1.0 + (speedMult - 1.0) * 0.6 + Math.min(0.6, Math.abs(playerVy) / 400);
+
     for (let i = 0; i < nebulaColors.length; i++) {
       const col = nebulaColors[i];
-      const cx = (width * 0.3 + i * width * 0.4 + Math.sin(gameTime * 0.2 + i) * 80) % (width * 1.5) - width * 0.2;
-      const cy = height * 0.3 + (i % 2) * height * 0.4;
+      const cx = (width * 0.3 + i * width * 0.4 + Math.sin(gameTime * 0.2 * speedPulse + i) * 80) % (width * 1.5) - width * 0.2;
+      const cy = height * 0.3 + (i % 2) * height * 0.4 + nebulaOffsetY;
       const r = Math.min(width, height) * 0.45;
 
       const nGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, r);
@@ -182,26 +190,55 @@ export class PixelArtRenderer {
     ctx: CanvasRenderingContext2D,
     stars: { x: number; y: number; speed: number; size: number; color: string; twinkle: number }[],
     width: number,
-    gameTime: number
+    gameTime: number,
+    playerVy: number = 0,
+    speedMult: number = 1.0
   ) {
+    ctx.save();
+    const absVy = Math.abs(playerVy);
+    const isSpeedBoost = speedMult > 1.2;
+
     stars.forEach((s) => {
-      ctx.fillStyle = s.color;
+      // Depth-scaled vertical parallax: closer stars (higher speed) shift more, far stars shift less
+      const parallaxY = s.y - playerVy * (s.speed * 0.06);
+
       const alpha = 0.5 + 0.5 * Math.sin(gameTime * 3 + s.twinkle);
       ctx.globalAlpha = alpha;
-      ctx.fillRect(Math.floor(s.x), Math.floor(s.y), s.size, s.size);
+
+      // Speed streak line length when moving fast or under speed boost
+      const streakLengthX = (s.speed * 2.8 * speedMult) + (isSpeedBoost ? 6 : 0);
+      const streakLengthY = -playerVy * (s.speed * 0.025);
+
+      if (absVy > 90 || isSpeedBoost) {
+        // Render subtle motion tail for enhanced sense of velocity & depth
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = s.size;
+        ctx.beginPath();
+        ctx.moveTo(Math.floor(s.x), Math.floor(parallaxY));
+        ctx.lineTo(Math.floor(s.x - streakLengthX), Math.floor(parallaxY - streakLengthY));
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = s.color;
+        ctx.fillRect(Math.floor(s.x), Math.floor(parallaxY), s.size, s.size);
+      }
     });
     ctx.globalAlpha = 1.0;
+    ctx.restore();
   }
 
   public drawParallaxPlanets(
     ctx: CanvasRenderingContext2D,
     planets: ParallaxPlanet[],
-    gameTime: number
+    gameTime: number,
+    playerVy: number = 0,
+    speedMult: number = 1.0
   ) {
     planets.forEach((p) => {
       ctx.save();
+      // Multi-layer vertical depth parallax: celestial objects shift vertically relative to camera
+      const parallaxY = p.y - playerVy * (p.speed * 0.14);
       const px = Math.floor(p.x);
-      const py = Math.floor(p.y);
+      const py = Math.floor(parallaxY);
 
       if (p.type === 'spiral_galaxy' || p.type === 'gas_giant') {
         // --- SPINNING SPIRAL GALAXY ---
@@ -292,9 +329,12 @@ export class PixelArtRenderer {
 
         ctx.restore();
       } else if (p.type === 'temple_island') {
-        // Floating Cosmic Temple Island with Waterfalls
-        ctx.fillStyle = '#221644';
+        // Floating Cosmic Temple Island with Waterfalls (Semi-transparent background silhouette)
+        ctx.save();
+        ctx.globalAlpha = 0.35; // Soft opacity to clearly distinguish as background decor
+
         // Floating rock base
+        ctx.fillStyle = '#1e1438';
         ctx.beginPath();
         ctx.moveTo(px - 60, py);
         ctx.lineTo(px + 60, py);
@@ -304,24 +344,26 @@ export class PixelArtRenderer {
         ctx.fill();
 
         // Top Grass/Gold carpet
-        ctx.fillStyle = '#3db87a';
+        ctx.fillStyle = '#2d9961';
         ctx.fillRect(px - 62, py - 4, 124, 6);
 
         // Golden Temple Domes
-        ctx.fillStyle = '#ffd700';
+        ctx.fillStyle = '#cca800';
         ctx.fillRect(px - 30, py - 30, 60, 26);
         ctx.fillRect(px - 15, py - 48, 30, 20);
 
         // Dome Roof
-        ctx.fillStyle = '#00e5ff';
+        ctx.fillStyle = '#00b4cc';
         ctx.beginPath();
         ctx.arc(px, py - 48, 16, Math.PI, 0);
         ctx.fill();
 
         // Cascading Cosmic Waterfall
-        ctx.fillStyle = 'rgba(0, 229, 255, 0.8)';
+        ctx.fillStyle = 'rgba(0, 229, 255, 0.5)';
         ctx.fillRect(px + 10, py, 12, 70);
         ctx.fillRect(px - 25, py, 8, 55);
+
+        ctx.restore();
       }
       ctx.restore();
     });
@@ -1031,66 +1073,91 @@ export class PixelArtRenderer {
     const bx = Math.floor(boss.x);
     const by = Math.floor(boss.y);
 
-    // Giant Swirling Cosmic Vortex
-    const r = 120 + Math.sin(gameTime * 4) * 12;
+    // Giant Swirling Cosmic Vortex Core & Accretion Disk
+    const r = 135 + Math.sin(gameTime * 4) * 14;
 
-    // Dark Inner Core with Golden Starry Center
-    const grad = ctx.createRadialGradient(bx, by, 10, bx, by, r);
-    grad.addColorStop(0, '#ffd700');
-    grad.addColorStop(0.2, '#000000');
-    grad.addColorStop(0.6, '#3b005c');
-    grad.addColorStop(1, 'rgba(160, 0, 255, 0)');
+    // Glowing Radial Backdrop Halo
+    ctx.save();
+    const haloGrad = ctx.createRadialGradient(bx, by, 8, bx, by, r + 45);
+    haloGrad.addColorStop(0, '#ffffff');
+    haloGrad.addColorStop(0.18, '#ffd700');
+    haloGrad.addColorStop(0.42, '#00e5ff');
+    haloGrad.addColorStop(0.7, '#6b21a8');
+    haloGrad.addColorStop(1, 'rgba(10, 0, 30, 0)');
 
-    ctx.fillStyle = grad;
+    ctx.fillStyle = haloGrad;
     ctx.beginPath();
-    ctx.arc(bx, by, r, 0, Math.PI * 2);
+    ctx.arc(bx, by, r + 45, 0, Math.PI * 2);
     ctx.fill();
 
-    // Pulsing Outer Spiral Tendrils (Golden & Magenta arms)
+    // Event Horizon Dark Core Ring
+    ctx.fillStyle = '#050212';
+    ctx.beginPath();
+    ctx.arc(bx, by, 38, 0, Math.PI * 2);
+    ctx.fill();
+
     ctx.strokeStyle = '#ffd700';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    for (let a = 0; a < Math.PI * 6; a += 0.15) {
-      const sr = a * 19;
-      const sx = bx + Math.cos(a + gameTime * 2.5) * sr;
-      const sy = by + Math.sin(a + gameTime * 2.5) * sr;
-      if (a === 0) ctx.moveTo(sx, sy);
-      else ctx.lineTo(sx, sy);
-    }
-    ctx.stroke();
-
-    ctx.strokeStyle = '#ff00aa';
     ctx.lineWidth = 3;
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur = 14;
     ctx.beginPath();
-    for (let a = 0; a < Math.PI * 6; a += 0.15) {
-      const sr = a * 19;
-      const sx = bx + Math.cos(a + Math.PI + gameTime * 2.5) * sr;
-      const sy = by + Math.sin(a + Math.PI + gameTime * 2.5) * sr;
-      if (a === 0) ctx.moveTo(sx, sy);
-      else ctx.lineTo(sx, sy);
-    }
+    ctx.arc(bx, by, 38 + Math.sin(gameTime * 6) * 3, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.shadowBlur = 0;
 
-    // Portal Name & Pin Counter
+    // 4 Pulsing Spiral Arms (Gold, Cyan, Magenta, White)
+    const armColors = ['#ffd700', '#00ffff', '#ff00aa', '#ffffff'];
+    const armCount = 4;
+    for (let arm = 0; arm < armCount; arm++) {
+      const angleOffset = (arm * Math.PI * 2) / armCount;
+      ctx.strokeStyle = armColors[arm];
+      ctx.lineWidth = arm === 0 ? 4 : 3;
+      ctx.shadowColor = armColors[arm];
+      ctx.shadowBlur = 10;
+
+      ctx.beginPath();
+      for (let a = 0; a < Math.PI * 5.5; a += 0.12) {
+        const sr = a * 18;
+        const sx = bx + Math.cos(a + angleOffset + gameTime * 2.8) * sr;
+        const sy = by + Math.sin(a + angleOffset + gameTime * 2.8) * sr;
+        if (a === 0) ctx.moveTo(sx, sy);
+        else ctx.lineTo(sx, sy);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Orbiting Star Sparks around portal boundary
+    for (let i = 0; i < 8; i++) {
+      const orbAng = i * (Math.PI / 4) + gameTime * 3.5;
+      const orbR = 85 + Math.sin(gameTime * 8 + i) * 12;
+      const ox = bx + Math.cos(orbAng) * orbR;
+      const oy = by + Math.sin(orbAng) * orbR;
+
+      ctx.fillStyle = i % 2 === 0 ? '#ffd700' : '#00ffff';
+      ctx.fillRect(Math.floor(ox - 3), Math.floor(oy - 3), 6, 6);
+    }
+
+    // Portal Title & Action Text
     ctx.fillStyle = '#ffd700';
     ctx.font = 'bold 16px monospace';
     ctx.textAlign = 'center';
     ctx.shadowColor = '#ffd700';
-    ctx.shadowBlur = 10;
-    ctx.fillText('🌀 GREAT VOID SPIRAL 🌀', bx, by - r - 25);
+    ctx.shadowBlur = 12;
+    ctx.fillText('🌀 ESPIRAL DO VAZIO PRIMORDIAL 🌀', bx, by - r - 22);
     ctx.shadowBlur = 0;
 
     const hasEnoughPins = pinsCollected >= pinsRequired;
     ctx.fillStyle = hasEnoughPins ? '#00ffff' : '#ff9900';
-    ctx.font = 'bold 13px monospace';
+    ctx.font = 'bold 12px monospace';
     ctx.shadowColor = hasEnoughPins ? '#00ffff' : '#ff9900';
     ctx.shadowBlur = 8;
     ctx.fillText(
       hasEnoughPins
-        ? '✨ TRANSCENDENCE READY! FLY INTO THE SPIRAL! ✨'
-        : `🎳 PINOS DE BOLICHE: ${pinsCollected} / ${pinsRequired} PARA ENTRAR`,
+        ? '✨ TRANSCENDÊNCIA PRONTA! VOE PARA O CENTRO DO ESPIRAL! ✨'
+        : `🎳 PINOS DE BOLICHE DO VAZIO: ${pinsCollected} / ${pinsRequired} (OU VOE DENTRO DO PORTAL!)`,
       bx,
-      by - r - 8
+      by - r - 6
     );
     ctx.shadowBlur = 0;
 
@@ -1173,7 +1240,8 @@ export class PixelArtRenderer {
     height: number,
     player: PlayerState,
     stage: StageConfig,
-    gameTime: number
+    gameTime: number,
+    currentDistance: number = 0
   ) {
     ctx.save();
 
@@ -1227,7 +1295,9 @@ export class PixelArtRenderer {
 
     // --- 2. STAGE INFO ON 2 LINES (x: 135..265) ---
     const isInfinite = stage && stage.id === 99;
-    const stageNumberText = isInfinite ? 'MODO INFINITO' : `FASE ${stage ? stage.id : 1}`;
+    const stageMinutes: Record<number, string> = { 1: '1m', 2: '2m', 3: '3m', 4: '4m', 5: '5m' };
+    const durTag = stage && stageMinutes[stage.id] ? ` (${stageMinutes[stage.id]})` : '';
+    const stageNumberText = isInfinite ? 'MODO INFINITO' : `FASE ${stage ? stage.id : 1}${durTag}`;
 
     let cleanTitle = stage && stage.title ? stage.title : 'COSMOS';
     if (cleanTitle.includes('—')) {
@@ -1238,18 +1308,27 @@ export class PixelArtRenderer {
     cleanTitle = cleanTitle.toUpperCase();
 
     ctx.textAlign = 'left';
-    // Line 1: Stage number
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    // Line 1: Stage number & duration
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
     ctx.font = 'bold 8px monospace';
-    ctx.fillText(stageNumberText, 135, 18, 125);
+    ctx.fillText(stageNumberText, 135, 16, 125);
 
     // Line 2: Stage title name
     ctx.shadowColor = '#ffd700';
     ctx.shadowBlur = 6;
     ctx.fillStyle = '#ffd700';
     ctx.font = 'bold 10px monospace';
-    ctx.fillText(cleanTitle, 135, 34, 125);
+    ctx.fillText(cleanTitle, 135, 30, 125);
     ctx.shadowBlur = 0;
+
+    // Line 3: Mini Stage Progress Bar
+    if (!isInfinite && stage.targetDistance > 0) {
+      const pRatio = Math.min(1.0, Math.max(0, currentDistance / stage.targetDistance));
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.fillRect(135, 36, 120, 4);
+      ctx.fillStyle = pRatio >= 1.0 ? '#00ffff' : '#ffd700';
+      ctx.fillRect(135, 36, 120 * pRatio, 4);
+    }
 
     // --- 3. THE ABIDE METER (x: 275..415) ---
     const barWidth = 140;
