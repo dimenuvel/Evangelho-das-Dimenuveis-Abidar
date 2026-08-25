@@ -2,8 +2,8 @@
 
 > *"MANTENHA A PRESENÇA — VOCÊ NUNCA FOI A LUGAR NENHUM"*
 
-**Versão:** 1.1  
-**APK:** https://github.com/dimenuvel/Evangelho-das-Dimenuveis-Abidar/releases/tag/v1.1  
+**Versão:** 1.2  
+**APK:** https://github.com/dimenuvel/Evangelho-das-Dimenuveis-Abidar/releases/tag/v1.2  
 **Versão online:** https://abidar-the-cosmic-carpet-ride.ai.studio/
 
 Arcade retro 16-bits em que **O Cara** viaja em seu tapete voador intergaláctico, desviando de perigos cósmicos, coletando itens e mantendo a presença através da mecânica **ABIDE**.
