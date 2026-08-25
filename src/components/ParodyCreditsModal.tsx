@@ -80,7 +80,7 @@ const PARODY_CREDITS: CreditSection[] = [
   { title: "🧘 MANTENHA A PRESENÇA 🧘", isHeader: true },
   { title: "VOCÊ NUNCA FOI A LUGAR NENHUM.", isSubHeader: true },
   { title: "ABIDE. ABIDE. ABIDE.", isHeader: true },
-  { title: "© 2026 EVANGELHO DIMENÚVEIS — TODOS OS DIREITOS RESERVADOS", isSubHeader: true },
+  { title: "© 1992-2026 EVANGELHO DIMENÚVEIS — TODOS OS DIREITOS RESERVADOS", isSubHeader: true },
 ];
 
 export const ParodyCreditsModal: React.FC<ParodyCreditsModalProps> = ({ onClose }) => {

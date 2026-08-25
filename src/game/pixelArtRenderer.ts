@@ -1178,67 +1178,104 @@ export class PixelArtRenderer {
     ctx.save();
 
     // Top Bar Frame Background - Crisp Dark Pixel Panel
-    ctx.fillStyle = 'rgba(5, 5, 21, 0.9)';
+    ctx.fillStyle = 'rgba(5, 5, 21, 0.92)';
     ctx.fillRect(0, 0, width, 56);
     ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
     ctx.fillRect(0, 54, width, 2);
 
-    // --- TOP LEFT: PORTRAIT & VIDAS ---
-    // Frame
+    // =========================================================================
+    // TOP HUD HORIZONTAL ORDER:
+    // 1. Lives (x: 10..125)
+    // 2. Stage Info on 2 lines (x: 135..265)
+    // 3. Abide Meter (x: 275..415)
+    // 4. Points Counter (x: 430..540)
+    // 5. Reserved for Pause Button (x: 550..800)
+    // =========================================================================
+
+    // --- 1. LIVES (x: 10..125) ---
+    // Portrait Box
     ctx.fillStyle = '#0a0518';
-    ctx.fillRect(12, 6, 42, 42);
+    ctx.fillRect(10, 7, 38, 38);
     ctx.strokeStyle = '#ffd700';
     ctx.lineWidth = 2;
-    ctx.strokeRect(12, 6, 42, 42);
+    ctx.strokeRect(10, 7, 38, 38);
 
     // Mini Dude Face in portrait
     ctx.fillStyle = '#e5a77d';
-    ctx.fillRect(22, 16, 22, 22);
+    ctx.fillRect(18, 16, 20, 20);
     ctx.fillStyle = '#3a2012';
-    ctx.fillRect(18, 12, 30, 8); // Hair
-    ctx.fillRect(20, 28, 26, 8); // Beard
+    ctx.fillRect(15, 12, 26, 7); // Hair
+    ctx.fillRect(17, 26, 22, 7); // Beard
     ctx.fillStyle = '#111';
-    ctx.fillRect(26, 20, 14, 4); // Glasses
+    ctx.fillRect(22, 19, 12, 4); // Glasses
 
     // Lives Label & Hearts
     ctx.fillStyle = '#ffd700';
-    ctx.font = 'bold 11px monospace';
+    ctx.font = 'bold 9px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText('THE DUDE', 62, 18);
+    ctx.fillText('THE DUDE', 54, 16);
 
     for (let i = 0; i < player.maxLives; i++) {
       ctx.fillStyle = i < player.lives ? '#ff2255' : '#442233';
-      const hx = 62 + i * 22;
-      const hy = 24;
+      const hx = 54 + i * 18;
+      const hy = 22;
       // Pixel Heart
-      ctx.fillRect(hx, hy + 2, 14, 10);
-      ctx.fillRect(hx + 2, hy, 4, 14);
-      ctx.fillRect(hx + 8, hy, 4, 14);
+      ctx.fillRect(hx, hy + 2, 12, 8);
+      ctx.fillRect(hx + 2, hy, 3, 12);
+      ctx.fillRect(hx + 7, hy, 3, 12);
     }
 
-    // --- TOP CENTER: ABIDAR ENERGY METER ---
-    const barWidth = 180;
-    const barHeight = 14;
-    const barX = Math.floor(width / 2 - barWidth / 2);
-    const barY = 24;
+    // --- 2. STAGE INFO ON 2 LINES (x: 135..265) ---
+    const isInfinite = stage && stage.id === 99;
+    const stageNumberText = isInfinite ? 'MODO INFINITO' : `FASE ${stage ? stage.id : 1}`;
 
-    // Title
-    ctx.shadowColor = '#00ffff';
-    ctx.shadowBlur = 8;
-    ctx.fillStyle = '#00ffff';
-    ctx.font = 'bold 11px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('ABIDAR ENERGY', width / 2, 16);
+    let cleanTitle = stage && stage.title ? stage.title : 'COSMOS';
+    if (cleanTitle.includes('—')) {
+      cleanTitle = cleanTitle.split('—')[1].trim();
+    } else if (cleanTitle.includes('-')) {
+      cleanTitle = cleanTitle.split('-')[1].trim();
+    }
+    cleanTitle = cleanTitle.toUpperCase();
+
+    ctx.textAlign = 'left';
+    // Line 1: Stage number
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.font = 'bold 8px monospace';
+    ctx.fillText(stageNumberText, 135, 18, 125);
+
+    // Line 2: Stage title name
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur = 6;
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 10px monospace';
+    ctx.fillText(cleanTitle, 135, 34, 125);
     ctx.shadowBlur = 0;
 
-    // Energy Bar Frame
+    // --- 3. THE ABIDE METER (x: 275..415) ---
+    const barWidth = 140;
+    const barHeight = 11;
+    const barX = 275;
+    const barY = 23;
+
+    // Abide Meter Top Labels
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('ENERGIA ABIDAR', barX, 17);
+
+    ctx.fillStyle = '#00ffff';
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${Math.round(player.abidarEnergy)}%`, barX + barWidth, 17);
+
+    // Energy Bar Background & Frame
     ctx.fillStyle = '#000000';
     ctx.fillRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4);
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.5;
     ctx.strokeRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4);
 
-    // Energy Fill (Cyan / Blue gradient from design theme)
+    // Energy Fill (Cyan / Blue gradient)
     const fillWidth = Math.max(0, Math.min(barWidth, (player.abidarEnergy / 100) * barWidth));
     const energyGrad = ctx.createLinearGradient(barX, 0, barX + barWidth, 0);
     if (player.isMaterialMode) {
@@ -1252,35 +1289,35 @@ export class PixelArtRenderer {
     ctx.fillStyle = energyGrad;
     ctx.fillRect(barX, barY, fillWidth, barHeight);
 
-    // Glow line on energy bar
+    // Glow line on energy bar edge
     if (fillWidth > 0) {
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(barX + fillWidth - 3, barY, 3, barHeight);
+      ctx.fillRect(barX + fillWidth - 2, barY, 2, barHeight);
     }
 
-    // --- TOP RIGHT-CENTER: PONTOS & COMBO ---
-    // Positioned at x=600 right-aligned so x=610..800 is reserved for top-right HTML Pause Button
+    // --- 4. POINTS COUNTER (x: 430..540) ---
     ctx.textAlign = 'right';
     ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-    ctx.font = '10px monospace';
-    ctx.fillText('PONTOS', 600, 16);
+    ctx.font = '8px monospace';
+    ctx.fillText('PONTOS', 540, 16);
 
     ctx.shadowColor = '#ffd700';
-    ctx.shadowBlur = 10;
+    ctx.shadowBlur = 8;
     ctx.fillStyle = '#ffd700';
-    ctx.font = 'bold 18px monospace';
+    ctx.font = 'bold 14px monospace';
     const scoreStr = player.score.toString().padStart(6, '0');
-    ctx.fillText(scoreStr, 600, 34);
+    ctx.fillText(scoreStr, 540, 31);
     ctx.shadowBlur = 0;
 
     // Combo Indicator
     if (player.combo > 1) {
       ctx.fillStyle = '#00ffff';
-      ctx.font = 'bold 11px monospace';
-      ctx.fillText(`COMBO x${player.combo}`, 600, 48);
+      ctx.font = 'bold 9px monospace';
+      ctx.fillText(`COMBO x${player.combo}`, 540, 43);
     }
 
-    // --- BOTTOM HUD OVERLAYS ---
+    // --- 5. RESERVED SPACE FOR PAUSE BUTTON (x: 550..800) ---
+    // Rendered via HTML overlay button at absolute top-right in GameCanvas.tsx
     // Bottom Left: Sacred IEOUA Vowel Slots
     ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(5, 5, 21, 0.9)';
@@ -1311,27 +1348,22 @@ export class PixelArtRenderer {
       ctx.shadowBlur = 0;
     });
 
-    // Bottom Center: Stage & Abide Banner
+    // Bottom Center: Abide Presence Banner
     ctx.textAlign = 'center';
     if (player.isAbiding) {
       ctx.fillStyle = '#ffd700';
-      ctx.font = 'bold 16px monospace';
+      ctx.font = 'bold 15px monospace';
       ctx.shadowColor = '#ffd700';
       ctx.shadowBlur = 12;
-      ctx.fillText('— ABIDING — (+1000 PRESENCE)', width / 2, height - 20);
+      ctx.fillText('— ABIDING — (+1000 PRESENCE)', width / 2, height - 18);
       ctx.shadowBlur = 0;
     } else {
       ctx.fillStyle = '#ffd700';
-      ctx.font = 'bold 14px monospace';
+      ctx.font = 'bold 12px monospace';
       ctx.shadowColor = '#ffd700';
       ctx.shadowBlur = 8;
       ctx.fillText('MANTENHA A PRESENÇA', width / 2, height - 18);
       ctx.shadowBlur = 0;
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-      ctx.font = '10px monospace';
-      const stageTitle = (stage && stage.title) ? stage.title.toUpperCase() : 'COSMOS';
-      ctx.fillText(`STAGE: ${stageTitle}`, width / 2, height - 34);
     }
 
     ctx.restore();

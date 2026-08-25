@@ -35,6 +35,7 @@ export const GameCanvas: React.FC<Props> = ({
   const [presencePoints, setPresencePoints] = useState(0);
   const [pinsCount, setPinsCount] = useState(0);
   const [coffeesCount, setCoffeesCount] = useState(0);
+  const [isAbiding, setIsAbiding] = useState(false);
 
   const [showNameEntry, setShowNameEntry] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -42,11 +43,24 @@ export const GameCanvas: React.FC<Props> = ({
   const [highScoresList, setHighScoresList] = useState<HighScoreEntry[]>(getHighScores);
   const [hasPromptedName, setHasPromptedName] = useState(false);
 
+  const hasFiredConfettiRef = useRef(false);
+
+  const triggerConfettiThreeTimes = () => {
+    confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+    setTimeout(() => {
+      confetti({ particleCount: 60, spread: 80, origin: { y: 0.5 } });
+    }, 250);
+    setTimeout(() => {
+      confetti({ particleCount: 100, spread: 90, origin: { y: 0.6 } });
+    }, 500);
+  };
+
   // Initialize Game Engine
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    hasFiredConfettiRef.current = false;
     const engine = new GameEngine(canvas);
     engineRef.current = engine;
     engine.settings = settings;
@@ -66,10 +80,12 @@ export const GameCanvas: React.FC<Props> = ({
           setPresencePoints(engine.player.presencePoints);
           setPinsCount(engine.player.pinsCollected);
           setCoffeesCount(engine.player.coffeesDrunk);
+          setIsAbiding(engine.player.isAbiding);
         }
 
-        if (engine.isStageClear || engine.isVictory) {
-          confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+        if ((engine.isStageClear || engine.isVictory) && !hasFiredConfettiRef.current) {
+          hasFiredConfettiRef.current = true;
+          triggerConfettiThreeTimes();
         }
       }
     }, 200);
@@ -141,6 +157,7 @@ export const GameCanvas: React.FC<Props> = ({
 
   const handleRestart = () => {
     soundEngine.playUiClick();
+    hasFiredConfettiRef.current = false;
     setHasPromptedName(false);
     setShowNameEntry(false);
     setShowLeaderboard(false);
@@ -155,6 +172,7 @@ export const GameCanvas: React.FC<Props> = ({
 
   const handleNextStage = () => {
     soundEngine.playUiClick();
+    hasFiredConfettiRef.current = false;
     if (engineRef.current) {
       engineRef.current.nextStage();
     }
@@ -197,6 +215,48 @@ export const GameCanvas: React.FC<Props> = ({
             {isPaused ? '▶ CONTINUAR' : '⏸ PAUSAR'}
           </button>
         </div>
+
+        {/* On-Screen Dedicated ABIDE Button */}
+        {!isPaused && !isGameOver && !isStageClear && !isVictory && (
+          <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 z-40 pointer-events-auto">
+            <button
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                if (engineRef.current) engineRef.current.setHovering(true);
+              }}
+              onPointerUp={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                if (engineRef.current) engineRef.current.setHovering(false);
+              }}
+              onPointerLeave={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                if (engineRef.current) engineRef.current.setHovering(false);
+              }}
+              onTouchStart={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                if (engineRef.current) engineRef.current.setHovering(true);
+              }}
+              onTouchEnd={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                if (engineRef.current) engineRef.current.setHovering(false);
+              }}
+              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-sm border-2 font-black text-xs sm:text-xs tracking-wider shadow-[3px_3px_0_0_rgba(0,0,0,0.8)] transition active:scale-95 flex items-center gap-1 select-none cursor-pointer ${
+                isAbiding
+                  ? 'bg-[#ffd700] text-black border-yellow-300 animate-pulse glow-gold shadow-[0_0_15px_rgba(255,215,0,0.9)]'
+                  : 'bg-black/85 text-[#ffd700] border-[#ffd700] hover:bg-[#ffd700] hover:text-black backdrop-blur-md'
+              }`}
+              title="Pairar e meditar para acumular Presença"
+            >
+              <span>🧘</span>
+              <span>Abidar</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* --- PAUSE MODAL --- */}

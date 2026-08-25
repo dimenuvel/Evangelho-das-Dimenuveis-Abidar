@@ -187,6 +187,7 @@ export class GameEngine {
 
   // Input state
   private inputLift: boolean = false;
+  private inputHover: boolean = false;
   private inputUp: boolean = false;
   private inputDown: boolean = false;
   private touchTargetY: number | null = null;
@@ -409,6 +410,10 @@ export class GameEngine {
     this.inputLift = active;
   }
 
+  public setHovering(active: boolean) {
+    this.inputHover = active;
+  }
+
   public setInputUp(active: boolean) {
     this.inputLift = active;
   }
@@ -448,18 +453,24 @@ export class GameEngine {
     const speedMult = this.player.speedBoostActive ? 1.5 : this.player.timeSlowActive ? 0.6 : 1.0;
     this.currentDistance += stage.scrollSpeed * speedMult * dt * 30;
 
-    // --- PLAYER MOVEMENT (TAP/CLICK TO RISE, RELEASE TO FALL) ---
+    // --- PLAYER MOVEMENT (TAP/CLICK TO RISE, RELEASE TO FALL, HOVER TO ABIDE) ---
     const gravity = 700; // Constant downward gravity force
     const liftForce = -1550; // Upward force when tapped/held
 
     let accelY = gravity;
-    if (this.inputLift) {
+    if (this.inputHover) {
+      accelY = 0;
+      this.player.vy *= 0.85;
+      if (Math.abs(this.player.vy) < 5) this.player.vy = 0;
+    } else if (this.inputLift) {
       accelY += liftForce;
     }
 
     // Material mode slows responsiveness
     const drag = this.player.isMaterialMode ? 0.92 : 0.96;
-    this.player.vy = (this.player.vy + accelY * dt) * drag;
+    if (!this.inputHover) {
+      this.player.vy = (this.player.vy + accelY * dt) * drag;
+    }
 
     // Terminal velocity limits
     this.player.vy = Math.max(-360, Math.min(420, this.player.vy));
@@ -484,10 +495,11 @@ export class GameEngine {
     }
 
     // --- ABIDE DETECTION ---
-    // If vertical movement is balanced/near stationary and player is inside screen bounds
-    if (Math.abs(this.player.vy) < 25 && this.player.y < deathY) {
+    // Floating is active when hovering OR when vertical speed is low (< 70 px/s)
+    const isFloating = this.inputHover || (Math.abs(this.player.vy) < 70 && this.player.y < deathY);
+    if (isFloating) {
       this.player.stillTime += dt;
-      if (this.player.stillTime >= 2.0) {
+      if (this.player.stillTime >= 0.8) {
         if (!this.player.isAbiding) {
           this.player.isAbiding = true;
           soundEngine.setAbideState(true);
@@ -496,8 +508,8 @@ export class GameEngine {
           this.addFloatingText(this.player.x + 30, this.player.y - 30, '+1000 PRESENCE', '#ffd700', 1.8);
         }
         this.player.totalAbideSeconds += dt;
-        // Slowly regenerate Abidar energy
-        this.player.abidarEnergy = Math.min(100, this.player.abidarEnergy + dt * 6.0);
+        // Regenerate Abidar energy when abiding
+        this.player.abidarEnergy = Math.min(100, this.player.abidarEnergy + dt * 18.0);
       }
     } else {
       if (this.player.isAbiding) {

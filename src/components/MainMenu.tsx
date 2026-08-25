@@ -343,7 +343,7 @@ export const MainMenu: React.FC<Props> = ({
             "MANTENHA A PRESENÇA — VOCÊ NUNCA FOI A LUGAR NENHUM"
           </p>
           <div className="flex items-center justify-center gap-2 text-[9px] text-white/80 font-mono tracking-wider leading-tight">
-            <span>© Evangelho das Dimenúveis</span>
+            <span>© 1992-2026 Evangelho das Dimenúveis</span>
             <span>•</span>
             <a
               href="mailto:samuel.tiem@proton.me?subject=Abidar%20-%20The%20Cosmic%20Carpet%20Ride"
@@ -352,7 +352,7 @@ export const MainMenu: React.FC<Props> = ({
               Contato
             </a>
             <span>•</span>
-            <span className="text-[#ffd700] font-bold">v1.1</span>
+            <span className="text-[#ffd700] font-bold">v1.2</span>
           </div>
         </footer>
       </div>
