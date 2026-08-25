@@ -30,6 +30,7 @@ export const GameCanvas: React.FC<Props> = ({
   const [isGameOver, setIsGameOver] = useState(false);
   const [isStageClear, setIsStageClear] = useState(false);
   const [isVictory, setIsVictory] = useState(false);
+  const [isMuted, setIsMuted] = useState(() => soundEngine.getMuted());
 
   const [score, setScore] = useState(0);
   const [presencePoints, setPresencePoints] = useState(0);
@@ -187,6 +188,12 @@ export const GameCanvas: React.FC<Props> = ({
     }
   };
 
+  const handleReturnToMenu = () => {
+    soundEngine.playUiClick();
+    soundEngine.startMenuMusic();
+    onReturnToMenu();
+  };
+
   return (
     <div
       className="relative w-full h-screen bg-black overflow-hidden flex flex-col items-center justify-center select-none font-mono cursor-pointer touch-none"
@@ -265,6 +272,29 @@ export const GameCanvas: React.FC<Props> = ({
           <div className="bg-[#0b051b] border-2 border-[#ffd700] rounded-sm max-w-sm w-full p-3.5 sm:p-5 text-white shadow-[10px_10px_0_0_rgba(0,0,0,0.8)] text-center space-y-2.5 sm:space-y-3 max-h-[92vh] overflow-y-auto scrollbar-none">
             <h2 className="text-lg sm:text-2xl font-black text-[#ffd700] tracking-widest glow-gold">⏸ JOGO PAUSADO</h2>
             <p className="text-cyan-300 text-[11px] sm:text-xs tracking-wider glow-cyan">Respire fundo. Apenas abide.</p>
+
+            {/* Sound Toggle Button (Highlighted when muted) */}
+            <button
+              onClick={() => {
+                const nextMuted = !isMuted;
+                soundEngine.setMuted(nextMuted);
+                setIsMuted(nextMuted);
+                onUpdateSettings({ ...settings, soundEnabled: !nextMuted });
+                if (!nextMuted) {
+                  soundEngine.resumeMusic();
+                }
+              }}
+              className={`w-full py-2 px-3 border rounded-sm font-bold text-xs tracking-wider transition cursor-pointer flex items-center justify-center gap-2 shadow-[4px_4px_0_0_rgba(0,0,0,0.5)] ${
+                isMuted
+                  ? 'bg-red-950/90 border-red-500 text-red-200 hover:bg-red-900 animate-pulse'
+                  : 'bg-cyan-950/70 border-cyan-400/60 text-cyan-300 hover:bg-cyan-900'
+              }`}
+            >
+              <span className="text-base">{isMuted ? '🔇' : '🔊'}</span>
+              <span className="uppercase text-[10px] sm:text-[11px] font-black tracking-wider">
+                {isMuted ? 'ÁUDIO SILENCIADO (DESMUTAR)' : 'ÁUDIO ATIVADO (MUTAR)'}
+              </span>
+            </button>
 
             <div className="space-y-2 pt-1">
               <button
@@ -370,7 +400,7 @@ export const GameCanvas: React.FC<Props> = ({
                 {isHighScore(score) && !hasPromptedName ? '🏆 REGISTRAR RECORDE NO TOP 10' : '🏆 VER TOP 10 RANKING'}
               </button>
               <button
-                onClick={onReturnToMenu}
+                onClick={handleReturnToMenu}
                 className="w-full py-1.5 bg-gray-900 text-gray-400 border border-white/10 font-bold rounded-sm hover:bg-gray-800 transition cursor-pointer text-xs shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]"
               >
                 🏠 MENU PRINCIPAL
@@ -441,7 +471,7 @@ export const GameCanvas: React.FC<Props> = ({
                 {isHighScore(score) && !hasPromptedName ? '🏆 REGISTRAR RECORDE NO TOP 10' : '🏆 VER TOP 10 RANKING'}
               </button>
               <button
-                onClick={onReturnToMenu}
+                onClick={handleReturnToMenu}
                 className="w-full py-1.5 bg-purple-950 text-purple-200 border border-purple-400 font-bold text-xs rounded-sm hover:bg-purple-900 transition cursor-pointer uppercase tracking-widest"
               >
                 🏠 VOLTAR AO INÍCIO (MAIN MENU)
@@ -456,7 +486,7 @@ export const GameCanvas: React.FC<Props> = ({
         <ParodyCreditsModal
           onClose={() => {
             setShowCredits(false);
-            onReturnToMenu();
+            handleReturnToMenu();
           }}
         />
       )}

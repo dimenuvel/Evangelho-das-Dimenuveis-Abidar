@@ -355,9 +355,7 @@ export class GameEngine {
 
     const currentConfig = this.getCurrentStageConfig();
     soundEngine.setStage(currentConfig.id);
-    if (this.settings.soundEnabled) {
-      soundEngine.startMusic(currentConfig.id);
-    }
+    soundEngine.startMusic(currentConfig.id);
 
     this.isRunning = true;
     this.lastTime = performance.now();
@@ -385,9 +383,7 @@ export class GameEngine {
 
       const currentConfig = this.getCurrentStageConfig();
       soundEngine.setStage(currentConfig.id);
-      if (this.settings.soundEnabled) {
-        soundEngine.startMusic(currentConfig.id);
-      }
+      soundEngine.startMusic(currentConfig.id);
       this.addFloatingText(this.width / 2, this.height / 2 - 30, currentConfig.title, '#ffd700', 2.0);
     } else {
       this.isVictory = true;
@@ -398,9 +394,9 @@ export class GameEngine {
   public setPaused(paused: boolean) {
     this.isPaused = paused;
     if (paused) {
-      soundEngine.stopMusic();
-    } else if (this.settings.soundEnabled) {
-      soundEngine.startMusic(STAGES[this.currentStageIndex].id);
+      soundEngine.pauseMusic();
+    } else {
+      soundEngine.resumeMusic();
     }
   }
 

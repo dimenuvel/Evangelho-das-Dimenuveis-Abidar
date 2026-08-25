@@ -58,6 +58,15 @@ class SoundEngine {
     if (this.masterGain) {
       this.masterGain.gain.value = muted ? 0 : 1;
     }
+    if (muted) {
+      this.pauseMusic();
+    } else {
+      if (this.musicMode === 'menu') {
+        this.startMenuMusic();
+      } else {
+        this.startMusic(this.currentStage);
+      }
+    }
   }
 
   public setMusicVolume(vol: number) {
@@ -412,7 +421,14 @@ class SoundEngine {
 
   public startMenuMusic() {
     this.initCtx();
-    if (this.isMusicPlaying && this.musicMode === 'menu') return;
+    const modeChanged = this.musicMode !== 'menu';
+    this.musicMode = 'menu';
+
+    if (this.isMuted) {
+      this.pauseMusic();
+      return;
+    }
+    if (this.isMusicPlaying && !modeChanged) return;
 
     this.stopMusic();
     this.musicMode = 'menu';
@@ -423,14 +439,37 @@ class SoundEngine {
 
   public startMusic(stage: number = 1) {
     this.initCtx();
-    const stageChanged = this.currentStage !== stage;
+    const stageChanged = this.currentStage !== stage || this.musicMode !== 'game';
     this.currentStage = stage;
-    if (this.isMusicPlaying && this.musicMode === 'game' && !stageChanged) return;
+    this.musicMode = 'game';
+
+    if (this.isMuted) {
+      this.pauseMusic();
+      return;
+    }
+    if (this.isMusicPlaying && !stageChanged) return;
 
     this.stopMusic();
     this.musicMode = 'game';
     this.isMusicPlaying = true;
     this.stepCount = 0;
+    this.scheduleNextBeat();
+  }
+
+  public pauseMusic() {
+    this.isMusicPlaying = false;
+    if (this.musicTimer !== null) {
+      window.clearTimeout(this.musicTimer);
+      this.musicTimer = null;
+    }
+  }
+
+  public resumeMusic() {
+    this.initCtx();
+    if (this.isMuted) return;
+    if (this.isMusicPlaying) return;
+
+    this.isMusicPlaying = true;
     this.scheduleNextBeat();
   }
 
