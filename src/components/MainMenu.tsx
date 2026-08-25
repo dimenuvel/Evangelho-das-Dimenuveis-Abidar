@@ -26,7 +26,25 @@ export const MainMenu: React.FC<Props> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [showStageSelect, setShowStageSelect] = useState(false);
   const [isScreensaver, setIsScreensaver] = useState(false);
+  const [isMuted, setIsMuted] = useState(() => soundEngine.getMuted());
   const timerRef = useRef<number | null>(null);
+
+  // Start mystical theme song on start screen mount & first interaction
+  useEffect(() => {
+    soundEngine.startMenuMusic();
+
+    const handleFirstUserInteraction = () => {
+      soundEngine.startMenuMusic();
+    };
+
+    window.addEventListener('pointerdown', handleFirstUserInteraction, { once: true });
+    window.addEventListener('keydown', handleFirstUserInteraction, { once: true });
+
+    return () => {
+      window.removeEventListener('pointerdown', handleFirstUserInteraction);
+      window.removeEventListener('keydown', handleFirstUserInteraction);
+    };
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -190,14 +208,40 @@ export const MainMenu: React.FC<Props> = ({
 
       {/* Main Menu UI Container (Hidden during screensaver mode) */}
       <div className={`relative z-20 w-full min-h-full flex flex-col justify-between items-center transition-all duration-700 ${isScreensaver ? 'opacity-0 pointer-events-none scale-95' : 'opacity-100 pointer-events-auto scale-100'}`}>
-        {/* Top Header & High Score */}
-        <header className="w-full max-w-3xl flex justify-end items-center bg-black/40 border border-white/10 rounded-sm px-2.5 py-1 backdrop-blur-sm shrink-0">
+        {/* Top Header & High Score & Sound Mute Toggle */}
+        <header className="w-full max-w-3xl flex justify-between items-center bg-black/40 border border-white/10 rounded-sm px-2.5 py-1 backdrop-blur-sm shrink-0">
           <div className="flex items-center gap-1.5 bg-black/60 px-2 py-0.5 border border-[#ffd700]/50 rounded-sm">
             <span className="text-[9px] sm:text-[10px] text-white/70 uppercase tracking-wider font-bold whitespace-nowrap">RECORDE / HIGH SCORE:</span>
             <span className="text-[#ffd700] text-xs sm:text-sm font-black tracking-wider glow-gold">
               {highScore.toString().padStart(6, '0')}
             </span>
           </div>
+
+          {/* Sound Icon Button (Top Right Mute/Unmute) */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const nextMuted = !isMuted;
+              soundEngine.setMuted(nextMuted);
+              setIsMuted(nextMuted);
+              if (!nextMuted) {
+                soundEngine.startMenuMusic();
+              } else {
+                soundEngine.playUiClick();
+              }
+            }}
+            className={`flex items-center gap-1.5 px-2.5 py-1 border rounded-sm font-bold text-xs tracking-wider transition cursor-pointer shadow-md ${
+              isMuted
+                ? 'bg-red-950/80 border-red-500/70 text-red-300 hover:bg-red-900'
+                : 'bg-cyan-950/80 border-cyan-400/70 text-cyan-300 hover:bg-cyan-900 glow-cyan'
+            }`}
+            title={isMuted ? "Ativar Áudio (Unmute)" : "Silenciar Áudio (Mute)"}
+          >
+            <span className="text-sm">{isMuted ? '🔇' : '🔊'}</span>
+            <span className="text-[10px] sm:text-xs font-mono uppercase font-black">
+              {isMuted ? 'MUTADO' : 'MÚSICA'}
+            </span>
+          </button>
         </header>
 
         {/* Main Title Banner */}

@@ -15,6 +15,7 @@ class SoundEngine {
   private sfxVolume: number = 0.7;
 
   private currentStage: number = 1;
+  private musicMode: 'menu' | 'game' = 'menu';
   private isMusicPlaying: boolean = false;
   private isAbiding: boolean = false;
   private musicTimer: number | null = null;
@@ -409,11 +410,25 @@ class SoundEngine {
 
   // --- BACKGROUND MUSIC ENGINE ---
 
+  public startMenuMusic() {
+    this.initCtx();
+    if (this.isMusicPlaying && this.musicMode === 'menu') return;
+
+    this.stopMusic();
+    this.musicMode = 'menu';
+    this.isMusicPlaying = true;
+    this.stepCount = 0;
+    this.scheduleNextBeat();
+  }
+
   public startMusic(stage: number = 1) {
     this.initCtx();
+    const stageChanged = this.currentStage !== stage;
     this.currentStage = stage;
-    if (this.isMusicPlaying) return;
+    if (this.isMusicPlaying && this.musicMode === 'game' && !stageChanged) return;
 
+    this.stopMusic();
+    this.musicMode = 'game';
     this.isMusicPlaying = true;
     this.stepCount = 0;
     this.scheduleNextBeat();
@@ -434,15 +449,126 @@ class SoundEngine {
   private scheduleNextBeat = () => {
     if (!this.isMusicPlaying || !this.ctx || !this.musicGain) return;
 
-    const tempo = 110; // BPM
+    const tempo = this.musicMode === 'menu' ? 68 : 110; // BPM
     const stepTime = (60 / tempo) / 4; // 16th note in seconds
 
     const now = this.ctx.currentTime;
-    this.playSynthStep(now, this.stepCount, this.currentStage);
+    if (this.musicMode === 'menu') {
+      this.playMysticalMenuStep(now, this.stepCount);
+    } else {
+      this.playSynthStep(now, this.stepCount, this.currentStage);
+    }
 
     this.stepCount = (this.stepCount + 1) % 64; // 4 bar loop
     this.musicTimer = window.setTimeout(this.scheduleNextBeat, stepTime * 1000);
   };
+
+  /**
+   * Mystical Start Screen Theme Song:
+   * Ethereal Lydian 432Hz ambient pads, cosmic sitar chimes, and deep meditation drone.
+   */
+  private playMysticalMenuStep(now: number, step: number) {
+    if (!this.ctx || !this.musicGain) return;
+
+    // 1. Deep Cosmic Drone Bass (Om frequency C#2 / G#2) on quarter notes
+    if (step % 4 === 0) {
+      const droneOsc = this.ctx.createOscillator();
+      const droneGain = this.ctx.createGain();
+
+      droneOsc.type = 'triangle';
+      const droneFreq = (step / 4) % 8 < 4 ? 68.68 : 103.02; // C#2 / G#2
+      droneOsc.frequency.setValueAtTime(droneFreq, now);
+
+      droneGain.gain.setValueAtTime(0.12, now);
+      droneGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+      droneOsc.connect(droneGain);
+      droneGain.connect(this.musicGain);
+
+      droneOsc.start(now);
+      droneOsc.stop(now + 0.35);
+    }
+
+    // 2. Mystical Lydian Pad Chords (Bar transition every 16 steps)
+    if (step % 16 === 0) {
+      const bar = Math.floor(step / 16);
+      // Sacred Cosmic Chords:
+      // Bar 0: C#m9 (C#3, G#3, B3, E4, D#5)
+      // Bar 1: Aadd9 (A2, E3, G#3, C#4, B4)
+      // Bar 2: F#m11 (F#2, C#3, A3, E4, G#4)
+      // Bar 3: G#7sus4 (G#2, D#3, F#3, B3, D#4)
+      const chordPads = [
+        [138.59, 207.65, 246.94, 329.63, 622.25],
+        [110.00, 164.81, 207.65, 277.18, 493.88],
+        [92.50, 138.59, 220.00, 329.63, 415.30],
+        [103.83, 155.56, 185.00, 246.94, 311.13]
+      ];
+      const selectedChord = chordPads[bar % chordPads.length];
+
+      selectedChord.forEach((f) => {
+        if (!this.ctx || !this.musicGain) return;
+        const padOsc = this.ctx.createOscillator();
+        const padGain = this.ctx.createGain();
+
+        padOsc.type = 'sine';
+        padOsc.frequency.setValueAtTime(f, now);
+
+        padGain.gain.setValueAtTime(0.001, now);
+        padGain.gain.linearRampToValueAtTime(0.05, now + 0.6);
+        padGain.gain.exponentialRampToValueAtTime(0.001, now + 3.2);
+
+        padOsc.connect(padGain);
+        padGain.connect(this.musicGain);
+
+        padOsc.start(now);
+        padOsc.stop(now + 3.2);
+      });
+    }
+
+    // 3. Shimmering Star Chimes (Sitar/Harp arpeggios on odd 8th notes)
+    if (step % 2 === 1) {
+      const sitarNotes = [554.37, 622.25, 659.25, 830.61, 987.77, 1108.73, 1318.51]; // C#5 D#5 E5 G#5 B5 C#6 E6
+      const freq = sitarNotes[(step * 3) % sitarNotes.length];
+
+      const arpOsc = this.ctx.createOscillator();
+      const arpGain = this.ctx.createGain();
+
+      arpOsc.type = 'triangle';
+      arpOsc.frequency.setValueAtTime(freq, now);
+
+      arpGain.gain.setValueAtTime(0.06, now);
+      arpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+      arpOsc.connect(arpGain);
+      arpGain.connect(this.musicGain);
+
+      arpOsc.start(now);
+      arpOsc.stop(now + 0.22);
+    }
+
+    // 4. Tibetan Temple Singing Bowl / Bell Chime (at start of loop & bar 2)
+    if (step === 0 || step === 32) {
+      const bellFreqs = [528.00, 1056.00, 1584.00]; // 528Hz Solfeggio Miracle Pitch
+      bellFreqs.forEach((bf, idx) => {
+        if (!this.ctx || !this.musicGain) return;
+        const bellOsc = this.ctx.createOscillator();
+        const bellGain = this.ctx.createGain();
+
+        bellOsc.type = 'sine';
+        bellOsc.frequency.setValueAtTime(bf, now);
+
+        const vol = idx === 0 ? 0.08 : 0.03;
+        bellGain.gain.setValueAtTime(vol, now);
+        bellGain.gain.exponentialRampToValueAtTime(0.001, now + 2.8);
+
+        bellOsc.connect(bellGain);
+        bellGain.connect(this.musicGain);
+
+        bellOsc.start(now);
+        bellOsc.stop(now + 2.8);
+      });
+    }
+  }
 
   private playSynthStep(now: number, step: number, stage: number) {
     if (!this.ctx || !this.musicGain) return;
