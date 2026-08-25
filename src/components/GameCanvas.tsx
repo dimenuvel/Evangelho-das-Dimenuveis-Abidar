@@ -201,27 +201,27 @@ export const GameCanvas: React.FC<Props> = ({
 
       {/* --- PAUSE MODAL --- */}
       {isPaused && !isGameOver && !isStageClear && !isVictory && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0b051b] border-2 border-[#ffd700] rounded-sm max-w-sm w-full p-6 text-white shadow-[10px_10px_0_0_rgba(0,0,0,0.8)] text-center space-y-4 font-mono">
-            <h2 className="text-2xl font-black text-[#ffd700] tracking-widest glow-gold">⏸ JOGO PAUSADO</h2>
-            <p className="text-cyan-300 text-xs tracking-wider glow-cyan">Respire fundo. Apenas abide.</p>
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-2 sm:p-4 font-mono">
+          <div className="bg-[#0b051b] border-2 border-[#ffd700] rounded-sm max-w-sm w-full p-3.5 sm:p-5 text-white shadow-[10px_10px_0_0_rgba(0,0,0,0.8)] text-center space-y-2.5 sm:space-y-3 max-h-[92vh] overflow-y-auto scrollbar-none">
+            <h2 className="text-lg sm:text-2xl font-black text-[#ffd700] tracking-widest glow-gold">⏸ JOGO PAUSADO</h2>
+            <p className="text-cyan-300 text-[11px] sm:text-xs tracking-wider glow-cyan">Respire fundo. Apenas abide.</p>
 
-            <div className="space-y-3 pt-2">
+            <div className="space-y-2 pt-1">
               <button
                 onClick={handleTogglePause}
-                className="w-full py-3 bg-[#ffd700] text-black font-black rounded-sm hover:bg-yellow-300 transition shadow-[4px_4px_0_0_rgba(0,0,0,0.6)] cursor-pointer tracking-wider border-2 border-black"
+                className="w-full py-2.5 bg-[#ffd700] text-black font-black rounded-sm hover:bg-yellow-300 transition shadow-[4px_4px_0_0_rgba(0,0,0,0.6)] cursor-pointer tracking-wider border-2 border-black text-xs sm:text-sm"
               >
                 ▶ CONTINUAR (RESUME)
               </button>
               <button
                 onClick={handleRestart}
-                className="w-full py-2.5 bg-black/80 border-2 border-white/20 text-cyan-300 font-bold rounded-sm hover:bg-gray-900 transition cursor-pointer text-xs shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]"
+                className="w-full py-2 bg-black/80 border-2 border-white/20 text-cyan-300 font-bold rounded-sm hover:bg-gray-900 transition cursor-pointer text-xs shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]"
               >
                 🔄 REINICIAR FASE
               </button>
               <button
                 onClick={onReturnToMenu}
-                className="w-full py-2.5 bg-gray-900 text-gray-400 border border-white/10 font-bold rounded-sm hover:bg-gray-800 transition cursor-pointer text-xs shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]"
+                className="w-full py-2 bg-gray-900 text-gray-400 border border-white/10 font-bold rounded-sm hover:bg-gray-800 transition cursor-pointer text-xs shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]"
               >
                 🏠 MENU PRINCIPAL
               </button>
@@ -232,17 +232,17 @@ export const GameCanvas: React.FC<Props> = ({
 
       {/* --- STAGE CLEAR MODAL --- */}
       {isStageClear && !isVictory && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0b051b] border-2 border-[#ffd700] rounded-sm max-w-md w-full p-6 text-white shadow-[10px_10px_0_0_rgba(0,0,0,0.8)] text-center space-y-4 font-mono">
-            <div className="text-3xl">✨🌌✨</div>
-            <h2 className="text-2xl font-black text-[#ffd700] tracking-widest uppercase glow-gold">
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-2 sm:p-4 font-mono">
+          <div className="bg-[#0b051b] border-2 border-[#ffd700] rounded-sm max-w-md w-full p-3.5 sm:p-5 text-white shadow-[10px_10px_0_0_rgba(0,0,0,0.8)] text-center space-y-2.5 sm:space-y-3 max-h-[92vh] overflow-y-auto scrollbar-none">
+            <div className="text-2xl sm:text-3xl">✨🌌✨</div>
+            <h2 className="text-lg sm:text-2xl font-black text-[#ffd700] tracking-widest uppercase glow-gold">
               FASE CONCLUÍDA!
             </h2>
-            <p className="text-purple-200 text-xs">
+            <p className="text-purple-200 text-[11px] sm:text-xs">
               Você manteve a presença e atravessou {STAGES[stageIndex].title}.
             </p>
 
-            <div className="bg-black/60 p-4 rounded-sm border-2 border-white/10 text-left space-y-2 text-xs shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]">
+            <div className="bg-black/60 p-2.5 sm:p-3.5 rounded-sm border-2 border-white/10 text-left space-y-1.5 text-xs shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]">
               <div className="flex justify-between">
                 <span className="text-white/60">PONTUAÇÃO:</span>
                 <span className="text-[#ffd700] font-black glow-gold">{score}</span>
@@ -259,7 +259,7 @@ export const GameCanvas: React.FC<Props> = ({
 
             <button
               onClick={handleNextStage}
-              className="w-full py-3.5 bg-[#ffd700] text-black font-black text-sm rounded-sm hover:bg-yellow-300 transition cursor-pointer uppercase shadow-[6px_6px_0_0_rgba(0,0,0,0.6)] border-2 border-black tracking-widest"
+              className="w-full py-2.5 sm:py-3 bg-[#ffd700] text-black font-black text-xs sm:text-sm rounded-sm hover:bg-yellow-300 transition cursor-pointer uppercase shadow-[6px_6px_0_0_rgba(0,0,0,0.6)] border-2 border-black tracking-widest"
             >
               PRÓXIMA FASE (NEXT STAGE) ▶
             </button>
@@ -269,23 +269,23 @@ export const GameCanvas: React.FC<Props> = ({
 
       {/* --- GAME OVER MODAL --- */}
       {isGameOver && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1c0512] border-2 border-red-500 rounded-sm max-w-md w-full p-6 text-white shadow-[10px_10px_0_0_rgba(0,0,0,0.8)] text-center space-y-4 font-mono">
-            <div className="text-3xl">🧘‍♂️💀</div>
-            <h2 className="text-2xl font-black text-red-500 tracking-widest uppercase glow-red">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-2 sm:p-4 font-mono">
+          <div className="bg-[#1c0512] border-2 border-red-500 rounded-sm max-w-md w-full p-3.5 sm:p-5 text-white shadow-[10px_10px_0_0_rgba(0,0,0,0.8)] text-center space-y-2.5 sm:space-y-3 max-h-[92vh] overflow-y-auto scrollbar-none">
+            <div className="text-2xl sm:text-3xl">🧘‍♂️💀</div>
+            <h2 className="text-lg sm:text-2xl font-black text-red-500 tracking-widest uppercase glow-red">
               SUA ENERGIA SE DISSIPOU
             </h2>
-            <p className="text-purple-200 text-xs">
+            <p className="text-purple-200 text-[11px] sm:text-xs">
               Não faz mal. O universo é paciente. Tente novamente e mantenha o Abide.
             </p>
 
             {score > 0 && isHighScore(score) && !hasPromptedName && (
-              <div className="bg-yellow-500/20 border-2 border-[#ffd700] p-2.5 rounded-sm text-[#ffd700] text-xs font-bold animate-pulse text-center glow-gold">
+              <div className="bg-yellow-500/20 border-2 border-[#ffd700] p-2 rounded-sm text-[#ffd700] text-[11px] sm:text-xs font-bold animate-pulse text-center glow-gold">
                 🎉 PARABÉNS! NOVO RECORDE NO TOP 10!
               </div>
             )}
 
-            <div className="bg-black/60 p-4 rounded-sm border-2 border-white/10 text-left space-y-2 text-xs shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]">
+            <div className="bg-black/60 p-2.5 sm:p-3.5 rounded-sm border-2 border-white/10 text-left space-y-1.5 text-xs shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]">
               <div className="flex justify-between">
                 <span className="text-white/60">PONTOS FINAIS:</span>
                 <span className="text-[#ffd700] font-black glow-gold">{score}</span>
@@ -296,22 +296,22 @@ export const GameCanvas: React.FC<Props> = ({
               </div>
             </div>
 
-            <div className="space-y-2.5 pt-2">
+            <div className="space-y-2 pt-1">
               <button
                 onClick={handleRestart}
-                className="w-full py-3 bg-red-600 text-white font-black text-sm rounded-sm hover:bg-red-500 transition cursor-pointer uppercase shadow-[6px_6px_0_0_rgba(0,0,0,0.6)] border-2 border-black tracking-widest"
+                className="w-full py-2.5 sm:py-3 bg-red-600 text-white font-black text-xs sm:text-sm rounded-sm hover:bg-red-500 transition cursor-pointer uppercase shadow-[6px_6px_0_0_rgba(0,0,0,0.6)] border-2 border-black tracking-widest"
               >
                 🔄 TENTAR NOVAMENTE (RETRY)
               </button>
               <button
                 onClick={handleOpenLeaderboardOrNameEntry}
-                className="w-full py-2.5 bg-black border-2 border-[#ffd700] text-[#ffd700] font-black text-xs rounded-sm hover:bg-[#ffd700] hover:text-black transition cursor-pointer tracking-widest shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]"
+                className="w-full py-2 bg-black border-2 border-[#ffd700] text-[#ffd700] font-black text-[11px] sm:text-xs rounded-sm hover:bg-[#ffd700] hover:text-black transition cursor-pointer tracking-widest shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]"
               >
                 {isHighScore(score) && !hasPromptedName ? '🏆 REGISTRAR RECORDE NO TOP 10' : '🏆 VER TOP 10 RANKING'}
               </button>
               <button
                 onClick={onReturnToMenu}
-                className="w-full py-2.5 bg-gray-900 text-gray-400 border border-white/10 font-bold rounded-sm hover:bg-gray-800 transition cursor-pointer text-xs shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]"
+                className="w-full py-1.5 bg-gray-900 text-gray-400 border border-white/10 font-bold rounded-sm hover:bg-gray-800 transition cursor-pointer text-xs shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]"
               >
                 🏠 MENU PRINCIPAL
               </button>
@@ -320,27 +320,31 @@ export const GameCanvas: React.FC<Props> = ({
         </div>
       )}
 
-      {/* --- VICTORY / FINAL ABIDE ENDING --- */}
+      {/* --- VICTORY / FINAL VOID ENTRY ENDING --- */}
       {isVictory && (
-        <div className="fixed inset-0 bg-[#050515] flex items-center justify-center z-50 p-6 text-center font-mono">
-          <div className="max-w-xl w-full bg-black/80 border-2 border-[#ffd700] rounded-sm p-8 text-white shadow-[12px_12px_0_0_rgba(0,0,0,0.8)] space-y-6 relative z-10">
-            <div className="text-5xl animate-bounce">🧘‍♂️☕✨</div>
+        <div className="fixed inset-0 bg-[#050515] flex items-center justify-center z-50 p-2 sm:p-4 text-center font-mono">
+          <div className="max-w-xl w-full bg-black/85 border-2 border-[#ffd700] rounded-sm p-4 sm:p-6 text-white shadow-[12px_12px_0_0_rgba(0,0,0,0.8)] space-y-3 sm:space-y-4 relative z-10 max-h-[92vh] overflow-y-auto scrollbar-none">
+            <div className="text-3xl sm:text-4xl animate-bounce">🧘‍♂️🌌✨</div>
 
-            <h1 className="text-5xl font-black text-[#ffd700] tracking-widest glow-gold">
-              ABIDE.
+            <h1 className="text-2xl sm:text-4xl font-black text-[#ffd700] tracking-widest glow-gold uppercase">
+              ENTREU NO VAZIO!
             </h1>
 
-            <p className="text-lg font-bold text-cyan-300 tracking-widest italic glow-cyan">
-              "YOU WERE NEVER GOING ANYWHERE."
+            <p className="text-xs sm:text-sm font-bold text-cyan-300 tracking-wider glow-cyan">
+              O Cara absorveu a energia dos power-ups e adentrou o Vazio Primordial em paz absoluta.
+            </p>
+
+            <p className="text-[11px] sm:text-xs text-purple-300 italic">
+              "YOU WERE NEVER GOING ANYWHERE. ABIDE."
             </p>
 
             {score > 0 && isHighScore(score) && !hasPromptedName && (
-              <div className="bg-yellow-500/20 border-2 border-[#ffd700] p-3 rounded-sm text-[#ffd700] text-xs font-bold animate-pulse text-center glow-gold">
+              <div className="bg-yellow-500/20 border-2 border-[#ffd700] p-2 rounded-sm text-[#ffd700] text-[11px] sm:text-xs font-bold animate-pulse text-center glow-gold">
                 🎉 PARABÉNS! NOVO RECORDE NO TOP 10!
               </div>
             )}
 
-            <div className="bg-black/80 p-5 rounded-sm border-2 border-white/10 text-left space-y-2 text-xs shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]">
+            <div className="bg-black/80 p-3 sm:p-4 rounded-sm border-2 border-white/10 text-left space-y-1.5 text-xs shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]">
               <div className="flex justify-between">
                 <span className="text-white/60">PONTUAÇÃO TOTAL:</span>
                 <span className="text-[#ffd700] font-black glow-gold">{score}</span>
@@ -359,25 +363,26 @@ export const GameCanvas: React.FC<Props> = ({
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2 pt-1">
               <button
                 onClick={() => {
                   soundEngine.playUiClick();
                   setShowCredits(true);
                 }}
-                className="w-full py-3.5 bg-[#ffd700] text-black font-black text-sm rounded-sm hover:bg-yellow-300 transition cursor-pointer uppercase shadow-[6px_6px_0_0_rgba(0,0,0,0.6)] border-2 border-black tracking-widest glow-gold"
+                className="w-full py-3 bg-[#ffd700] text-black font-black text-xs sm:text-sm rounded-sm hover:bg-yellow-300 transition cursor-pointer uppercase shadow-[6px_6px_0_0_rgba(0,0,0,0.6)] border-2 border-black tracking-widest glow-gold animate-pulse flex items-center justify-center gap-2"
               >
-                🎬 VER CRÉDITOS DO COSMOS (ARCADE CREDITS)
+                <span>🎬</span>
+                <span>VER CRÉDITOS DO COSMOS (ROLL CREDITS)</span>
               </button>
               <button
                 onClick={handleOpenLeaderboardOrNameEntry}
-                className="w-full py-2.5 bg-black border-2 border-[#ffd700] text-[#ffd700] font-black text-xs rounded-sm hover:bg-[#ffd700] hover:text-black transition cursor-pointer tracking-widest shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]"
+                className="w-full py-2 bg-black border-2 border-[#ffd700] text-[#ffd700] font-black text-xs rounded-sm hover:bg-[#ffd700] hover:text-black transition cursor-pointer tracking-widest shadow-[4px_4px_0_0_rgba(0,0,0,0.5)]"
               >
                 {isHighScore(score) && !hasPromptedName ? '🏆 REGISTRAR RECORDE NO TOP 10' : '🏆 VER TOP 10 RANKING'}
               </button>
               <button
                 onClick={onReturnToMenu}
-                className="w-full py-2.5 bg-purple-950 text-purple-200 border border-purple-400 font-bold text-xs rounded-sm hover:bg-purple-900 transition cursor-pointer uppercase tracking-widest"
+                className="w-full py-1.5 bg-purple-950 text-purple-200 border border-purple-400 font-bold text-xs rounded-sm hover:bg-purple-900 transition cursor-pointer uppercase tracking-widest"
               >
                 🏠 VOLTAR AO INÍCIO (MAIN MENU)
               </button>

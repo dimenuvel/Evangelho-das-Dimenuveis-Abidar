@@ -668,7 +668,10 @@ export class PixelArtRenderer {
 
       if (c.type === 'bowling_pin') {
         const sprite = this.spriteCache.get('bowling_pin')!;
+        ctx.shadowColor = '#00ffff';
+        ctx.shadowBlur = 12;
         ctx.drawImage(sprite, cx - 12, cy - 16 + bobY);
+        ctx.shadowBlur = 0;
       } else if (c.type === 'coffee_cup') {
         const sprite = this.spriteCache.get('coffee_cup')!;
         ctx.drawImage(sprite, cx - 16, cy - 16 + bobY);
@@ -1016,48 +1019,80 @@ export class PixelArtRenderer {
 
   // --- THE GREAT VOID BOSS RENDERER ---
 
-  public drawBoss(ctx: CanvasRenderingContext2D, boss: BossState, gameTime: number) {
+  public drawBoss(
+    ctx: CanvasRenderingContext2D,
+    boss: BossState,
+    gameTime: number,
+    pinsCollected: number = 0,
+    pinsRequired: number = 5
+  ) {
     if (!boss.active) return;
     ctx.save();
     const bx = Math.floor(boss.x);
     const by = Math.floor(boss.y);
 
     // Giant Swirling Cosmic Vortex
-    const r = 110 + Math.sin(gameTime * 4) * 10;
+    const r = 120 + Math.sin(gameTime * 4) * 12;
 
-    // Dark Inner Core
+    // Dark Inner Core with Golden Starry Center
     const grad = ctx.createRadialGradient(bx, by, 10, bx, by, r);
-    grad.addColorStop(0, '#000000');
-    grad.addColorStop(0.5, '#2b003e');
-    grad.addColorStop(1, 'rgba(120, 0, 180, 0)');
+    grad.addColorStop(0, '#ffd700');
+    grad.addColorStop(0.2, '#000000');
+    grad.addColorStop(0.6, '#3b005c');
+    grad.addColorStop(1, 'rgba(160, 0, 255, 0)');
 
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.arc(bx, by, r, 0, Math.PI * 2);
     ctx.fill();
 
-    // Pulsing Outer Spiral Tendrils
-    ctx.strokeStyle = '#ff00aa';
+    // Pulsing Outer Spiral Tendrils (Golden & Magenta arms)
+    ctx.strokeStyle = '#ffd700';
     ctx.lineWidth = 4;
     ctx.beginPath();
-    for (let a = 0; a < Math.PI * 6; a += 0.2) {
-      const sr = a * 18;
-      const sx = bx + Math.cos(a + gameTime * 3) * sr;
-      const sy = by + Math.sin(a + gameTime * 3) * sr;
+    for (let a = 0; a < Math.PI * 6; a += 0.15) {
+      const sr = a * 19;
+      const sx = bx + Math.cos(a + gameTime * 2.5) * sr;
+      const sy = by + Math.sin(a + gameTime * 2.5) * sr;
       if (a === 0) ctx.moveTo(sx, sy);
       else ctx.lineTo(sx, sy);
     }
     ctx.stroke();
 
-    // Boss Name Tag & Instructions
-    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#ff00aa';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    for (let a = 0; a < Math.PI * 6; a += 0.15) {
+      const sr = a * 19;
+      const sx = bx + Math.cos(a + Math.PI + gameTime * 2.5) * sr;
+      const sy = by + Math.sin(a + Math.PI + gameTime * 2.5) * sr;
+      if (a === 0) ctx.moveTo(sx, sy);
+      else ctx.lineTo(sx, sy);
+    }
+    ctx.stroke();
+
+    // Portal Name & Pin Counter
+    ctx.fillStyle = '#ffd700';
     ctx.font = 'bold 16px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('THE GREAT VOID', bx, by - r - 15);
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur = 10;
+    ctx.fillText('🌀 GREAT VOID SPIRAL 🌀', bx, by - r - 25);
+    ctx.shadowBlur = 0;
 
-    ctx.fillStyle = '#ffd700';
-    ctx.font = '12px monospace';
-    ctx.fillText('ABIDE & COLLECT I E O U A TO TRANSITION', bx, by - r - 30);
+    const hasEnoughPins = pinsCollected >= pinsRequired;
+    ctx.fillStyle = hasEnoughPins ? '#00ffff' : '#ff9900';
+    ctx.font = 'bold 13px monospace';
+    ctx.shadowColor = hasEnoughPins ? '#00ffff' : '#ff9900';
+    ctx.shadowBlur = 8;
+    ctx.fillText(
+      hasEnoughPins
+        ? '✨ TRANSCENDENCE READY! FLY INTO THE SPIRAL! ✨'
+        : `🎳 PINOS DE BOLICHE: ${pinsCollected} / ${pinsRequired} PARA ENTRAR`,
+      bx,
+      by - r - 8
+    );
+    ctx.shadowBlur = 0;
 
     ctx.restore();
   }

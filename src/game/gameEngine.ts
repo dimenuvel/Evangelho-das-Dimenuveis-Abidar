@@ -82,8 +82,8 @@ export const STAGES: StageConfig[] = [
   {
     id: 5,
     title: 'STAGE 5 — THE PLEROMA',
-    subtitle: 'The Seven Dimenuous Layers & The Great Void',
-    targetDistance: 12000,
+    subtitle: 'Enter the Great Void Spiral & Claim Victory',
+    targetDistance: 9000,
     scrollSpeed: 5.5,
     bgGradStart: '#26004d',
     bgGradEnd: '#550066',
@@ -131,6 +131,7 @@ export class GameEngine {
 
   public currentStageIndex: number = 0;
   public currentDistance: number = 0;
+  public voidPinsCollected: number = 0;
 
   public getCurrentStageConfig(): StageConfig {
     if (this.isInfiniteMode) {
@@ -309,6 +310,7 @@ export class GameEngine {
     this.isVictory = false;
     this.isPaused = false;
     this.consecutiveCoffeeCount = 0;
+    this.voidPinsCollected = 0;
     this.inputLift = false;
 
     this.player = {
@@ -718,18 +720,20 @@ export class GameEngine {
     });
     this.floatingTexts = this.floatingTexts.filter((ft) => ft.alpha > 0);
 
-    // --- STAGE COMPLETION / BOSS MECHANIC ---
-    if (stage.hasBoss && this.currentDistance >= stage.targetDistance && !this.bossState.active) {
-      this.initBoss();
-    } else if (!stage.hasBoss && this.currentDistance >= stage.targetDistance && !this.isStageClear) {
-      this.isStageClear = true;
-      unlockNextStage(this.currentStageIndex);
-      soundEngine.playStageClearSound();
-      this.saveHighScore();
+    // --- STAGE COMPLETION & VOID ENTRY MECHANIC ---
+    if (stage.hasBoss && !this.bossState.active && !this.isVictory) {
+      if (this.currentDistance >= stage.targetDistance * 0.8) {
+        this.initBoss();
+      }
     }
 
     if (this.bossState.active) {
       this.updateBoss(dt);
+    } else if (!stage.hasBoss && this.currentDistance >= stage.targetDistance && !this.isStageClear && !this.isVictory) {
+      this.isStageClear = true;
+      unlockNextStage(this.currentStageIndex);
+      soundEngine.playStageClearSound();
+      this.saveHighScore();
     }
   }
 
@@ -874,6 +878,14 @@ export class GameEngine {
       this.player.pinsCollected++;
       this.consecutiveCoffeeCount = 0;
       soundEngine.playPinSound(comboMult);
+      if (this.bossState.active) {
+        this.voidPinsCollected++;
+        this.addFloatingText(c.x, c.y - 35, `🎳 PINO DO VAZIO! (${this.voidPinsCollected}/5)`, '#00ffff', 1.5);
+        if (this.voidPinsCollected >= 5) {
+          soundEngine.playSpiralActivationSound();
+          this.addFloatingText(this.width / 2, 120, '✨ VAZIO DESBLOQUEADO! VOE PARA O CENTRO! ✨', '#ffd700', 2.0);
+        }
+      }
     } else if (c.type === 'coffee_cup') {
       this.player.coffeesDrunk++;
       this.player.abidarEnergy = Math.min(100, this.player.abidarEnergy + 15);
@@ -1053,6 +1065,41 @@ export class GameEngine {
         value: 200
       });
     });
+
+    // In Stage 5, completing the IEOUA sequence also triggers entry into the Great Void!
+    if (this.currentStageIndex === STAGES.length - 1 && !this.isVictory) {
+      this.triggerVoidEntryVictory();
+    }
+  }
+
+  // --- VOID ENTRY & COSMIC VICTORY ---
+
+  public triggerVoidEntryVictory() {
+    if (this.isVictory) return;
+    this.isVictory = true;
+    unlockNextStage(this.currentStageIndex);
+    soundEngine.playStageClearSound();
+    soundEngine.playSpiralActivationSound();
+    this.saveHighScore();
+
+    this.addFloatingText(this.width / 2, this.height / 2 - 50, '✨ ENTERED THE GREAT VOID! ✨', '#ffd700', 2.5);
+    this.addFloatingText(this.width / 2, this.height / 2, '🧘 TRANSCENDENCE ACHIEVED! 🧘', '#00ffff', 2.0);
+
+    // Cosmic fireworks celebration
+    for (let i = 0; i < 70; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 80 + Math.random() * 260;
+      this.particles.push({
+        x: this.player.x,
+        y: this.player.y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        color: ['#ffd700', '#00ffff', '#c084fc', '#ffffff', '#f43f5e'][Math.floor(Math.random() * 5)],
+        size: Math.random() * 6 + 3,
+        life: 1.0 + Math.random() * 1.2,
+        maxLife: 2.2
+      });
+    }
   }
 
   // --- OBSTACLE HIT ---
@@ -1082,15 +1129,15 @@ export class GameEngine {
     }
   }
 
-  // --- FINAL BOSS LOGIC ---
+  // --- GREAT VOID SPIRAL PORTAL LOGIC ---
 
   private initBoss() {
     this.bossState = {
       active: true,
-      x: this.width * 0.78,
+      x: this.width * 0.76,
       y: this.height * 0.5,
-      width: 220,
-      height: 220,
+      width: 240,
+      height: 240,
       health: 100,
       maxHealth: 100,
       phase: 'emerging',
@@ -1099,42 +1146,104 @@ export class GameEngine {
       ieouaSequenceRequired: ['I', 'E', 'O', 'U', 'A'],
       currentRequiredIndex: 0
     };
+    this.voidPinsCollected = 0;
+    this.addFloatingText(this.width / 2, 90, '🌀 THE GREAT VOID SPIRAL APPEARED! 🌀', '#ffd700', 2.0);
+    this.addFloatingText(this.width / 2, 130, '🎳 COLETE 5 PINOS DO VAZIO PARA DESBLOQUEAR A TRANSCENDÊNCIA!', '#00ffff', 1.5);
+
+    // Clear any lingering dangerous obstacles so player can collect pins in peace
+    this.obstacles = [];
+
+    // Immediately spawn 5 golden glowing Void Bowling Pins nicely placed across the screen!
+    for (let i = 0; i < 5; i++) {
+      this.collectibles.push({
+        id: Math.random().toString(),
+        x: this.width * 0.35 + i * 85,
+        y: 110 + (i % 3) * 110 + (Math.random() - 0.5) * 30,
+        width: 28,
+        height: 38,
+        vx: -70,
+        vy: 0,
+        active: true,
+        type: 'bowling_pin',
+        pulsePhase: i * 0.8,
+        rotation: 0,
+        value: 300
+      });
+    }
   }
 
   private updateBoss(dt: number) {
+    if (this.isVictory) return;
+
     this.bossState.phaseTimer += dt;
-    this.bossState.pulsate += dt * 3;
+    this.bossState.pulsate += dt * 2.5;
 
-    // Boss floats up/down slowly
-    this.bossState.y = this.height * 0.5 + Math.sin(this.bossState.pulsate) * 60;
+    // Spiral floats up/down gently at center-right
+    this.bossState.y = this.height * 0.5 + Math.sin(this.bossState.pulsate) * 45;
 
-    // Spawn required IEOUA sequence periodically in boss fight
-    if (Math.random() < 0.04) {
-      const nextVowel = this.bossState.ieouaSequenceRequired[this.bossState.currentRequiredIndex] || 'I';
+    const PINS_REQUIRED = 5;
+
+    // Continuously ensure there are always at least 3 visible Void Bowling Pins on screen ahead of the player!
+    const activePins = this.collectibles.filter(
+      (c) => c.active && c.type === 'bowling_pin' && c.x > this.player.x - 40
+    );
+
+    if (activePins.length < 3 && this.voidPinsCollected < PINS_REQUIRED) {
       this.collectibles.push({
         id: Math.random().toString(),
-        x: this.width + 20,
-        y: 100 + Math.random() * (this.height - 200),
-        width: 32,
-        height: 32,
-        vx: -120,
-        vy: 0,
+        x: this.width + 30 + Math.random() * 50,
+        y: 80 + Math.random() * (this.height - 160),
+        width: 28,
+        height: 38,
+        vx: -110 - Math.random() * 30,
+        vy: (Math.random() - 0.5) * 20,
         active: true,
-        type: 'ieoua_orb',
-        vowel: nextVowel,
-        pulsePhase: 0,
+        type: 'bowling_pin',
+        pulsePhase: Math.random() * Math.PI,
         rotation: 0,
-        value: 500
+        value: 300
       });
     }
 
-    // Boss clears when player completes full IEOUA sequence or abides for 15s in front of Great Void
-    if (this.player.totalAbideSeconds > 15 || this.player.ieouaProgress.length === 5) {
-      this.bossState.active = false;
-      this.isVictory = true;
-      unlockNextStage(this.currentStageIndex);
-      soundEngine.playStageClearSound();
-      this.saveHighScore();
+    // Gentle magnetic pull towards active Void Bowling Pins during boss phase
+    this.collectibles.forEach((c) => {
+      if (c.active && c.type === 'bowling_pin') {
+        const dx = this.player.x - c.x;
+        const dy = this.player.y - c.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 180) {
+          c.x += (dx / dist) * 160 * dt;
+          c.y += (dy / dist) * 160 * dt;
+        }
+      }
+    });
+
+    // Proximity check between player and Great Void Spiral
+    const distToSpiral = Math.hypot(this.player.x - this.bossState.x, this.player.y - this.bossState.y);
+
+    if (this.voidPinsCollected >= PINS_REQUIRED) {
+      // Player has collected 5 void bowling pins! Pull player into spiral when near or automatically after short delay
+      if (distToSpiral < 320 || this.bossState.phaseTimer > 8.0) {
+        // Smoothly draw the Dude towards the center of the Spiral
+        this.player.x += (this.bossState.x - this.player.x) * 3.5 * dt;
+        this.player.y += (this.bossState.y - this.player.y) * 3.5 * dt;
+
+        if (distToSpiral < 65) {
+          this.bossState.active = false;
+          this.triggerVoidEntryVictory();
+        }
+      }
+    } else {
+      // If player comes close without enough void pins, display prompt
+      if (distToSpiral < 180 && Math.random() < 0.04) {
+        this.addFloatingText(
+          this.player.x,
+          this.player.y - 35,
+          `🎳 COLETE MAIS ${PINS_REQUIRED - this.voidPinsCollected} PINOS DO VAZIO!`,
+          '#ff9900',
+          1.3
+        );
+      }
     }
   }
 
@@ -1170,9 +1279,9 @@ export class GameEngine {
     // 3. Parallax Planets & Temples
     pixelRenderer.drawParallaxPlanets(this.ctx, this.planets, this.gameTime);
 
-    // 4. Boss
+    // 4. Boss Spiral
     if (this.bossState.active) {
-      pixelRenderer.drawBoss(this.ctx, this.bossState, this.gameTime);
+      pixelRenderer.drawBoss(this.ctx, this.bossState, this.gameTime, this.voidPinsCollected, 5);
     }
 
     // 5. Collectibles & Obstacles

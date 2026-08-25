@@ -166,7 +166,7 @@ export const MainMenu: React.FC<Props> = ({
   return (
     <div 
       onClick={handleContainerClick}
-      className="relative w-full h-screen overflow-hidden bg-[#050515] flex flex-col items-center justify-between p-3 sm:p-4 md:p-5 select-none font-mono text-white"
+      className="relative w-full h-screen overflow-y-auto bg-[#050515] flex flex-col items-center justify-between p-2 sm:p-4 select-none font-mono text-white scrollbar-none"
     >
       {/* Background Canvas */}
       <canvas
@@ -189,40 +189,40 @@ export const MainMenu: React.FC<Props> = ({
       )}
 
       {/* Main Menu UI Container (Hidden during screensaver mode) */}
-      <div className={`relative z-20 w-full h-full flex flex-col justify-between items-center transition-all duration-700 ${isScreensaver ? 'opacity-0 pointer-events-none scale-95' : 'opacity-100 pointer-events-auto scale-100'}`}>
+      <div className={`relative z-20 w-full min-h-full flex flex-col justify-between items-center transition-all duration-700 ${isScreensaver ? 'opacity-0 pointer-events-none scale-95' : 'opacity-100 pointer-events-auto scale-100'}`}>
         {/* Top Header & High Score */}
-        <header className="w-full max-w-3xl flex justify-end items-center bg-black/40 border border-white/10 rounded-sm px-3 py-1 backdrop-blur-sm shrink-0">
-          <div className="flex items-center gap-2 bg-black/60 px-2.5 py-0.5 border border-[#ffd700]/50 rounded-sm">
-            <span className="text-[10px] md:text-xs text-white/70 uppercase tracking-wider font-bold whitespace-nowrap">RECORDE / HIGH SCORE:</span>
-            <span className="text-[#ffd700] text-sm md:text-base font-black tracking-wider glow-gold">
+        <header className="w-full max-w-3xl flex justify-end items-center bg-black/40 border border-white/10 rounded-sm px-2.5 py-1 backdrop-blur-sm shrink-0">
+          <div className="flex items-center gap-1.5 bg-black/60 px-2 py-0.5 border border-[#ffd700]/50 rounded-sm">
+            <span className="text-[9px] sm:text-[10px] text-white/70 uppercase tracking-wider font-bold whitespace-nowrap">RECORDE / HIGH SCORE:</span>
+            <span className="text-[#ffd700] text-xs sm:text-sm font-black tracking-wider glow-gold">
               {highScore.toString().padStart(6, '0')}
             </span>
           </div>
         </header>
 
         {/* Main Title Banner */}
-        <div className="text-center my-auto flex flex-col items-center max-w-md w-full px-2 py-1">
-          <div className="bg-black/60 border-2 border-[#ffd700] rounded-sm p-3.5 sm:p-5 backdrop-blur-md w-full shadow-lg">
-            <div className="text-cyan-400 text-[9px] sm:text-[10px] md:text-xs font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase mb-1 glow-cyan whitespace-nowrap">
+        <div className="text-center my-auto flex flex-col items-center max-w-md w-full px-2 py-1.5">
+          <div className="bg-black/75 border-2 border-[#ffd700] rounded-sm p-2.5 sm:p-4 backdrop-blur-md w-full shadow-lg">
+            <div className="text-cyan-400 text-[9px] sm:text-[10px] font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase mb-0.5 glow-cyan whitespace-nowrap">
               — THE COSMIC CARPET RIDE —
             </div>
-            <div className="flex items-center justify-center gap-2.5 sm:gap-3 mb-1.5">
-              <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gray-900/90 border-2 border-[#ffd700] rounded-sm flex items-center justify-center text-lg sm:text-2xl shrink-0">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-900/90 border-2 border-[#ffd700] rounded-sm flex items-center justify-center text-base sm:text-xl shrink-0">
                 🧘
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#ffd700] tracking-widest glow-gold">
+              <h1 className="text-2xl sm:text-4xl font-black text-[#ffd700] tracking-widest glow-gold">
                 ABIDAR
               </h1>
             </div>
-            <p className="text-purple-200 text-[11px] sm:text-xs leading-tight mb-3 max-w-xs sm:max-w-sm mx-auto">
+            <p className="text-purple-200 text-[10px] sm:text-xs leading-tight mb-2 max-w-xs sm:max-w-sm mx-auto">
               Navegue com O Cara em seu tapete voador pelas galáxias místicas. Mantenha a presença. Abide.
             </p>
 
             {!showStageSelect ? (
-              <div className="mt-2 space-y-2 w-full max-w-xs sm:max-w-sm mx-auto">
+              <div className="mt-1.5 space-y-1.5 w-full max-w-xs sm:max-w-sm mx-auto">
                 <button
                   onClick={handlePlayClick}
-                  className="w-full py-2.5 bg-[#ffd700] text-black font-black text-sm sm:text-base rounded-sm hover:bg-yellow-300 transition shadow-[3px_3px_0_0_rgba(0,0,0,0.7)] cursor-pointer tracking-wider uppercase border-2 border-black"
+                  className="w-full py-2 sm:py-2.5 bg-[#ffd700] text-black font-black text-xs sm:text-sm rounded-sm hover:bg-yellow-300 transition shadow-[3px_3px_0_0_rgba(0,0,0,0.7)] cursor-pointer tracking-wider uppercase border-2 border-black"
                 >
                   ▶ JOGAR MODO FASES (STORY)
                 </button>
@@ -232,18 +232,18 @@ export const MainMenu: React.FC<Props> = ({
                     soundEngine.playUiClick();
                     onStartInfiniteGame();
                   }}
-                  className="w-full py-2.5 bg-cyan-400 text-black font-black text-sm sm:text-base rounded-sm hover:bg-cyan-300 transition shadow-[3px_3px_0_0_rgba(0,0,0,0.7)] cursor-pointer tracking-wider uppercase border-2 border-black glow-cyan"
+                  className="w-full py-2 sm:py-2.5 bg-cyan-400 text-black font-black text-xs sm:text-sm rounded-sm hover:bg-cyan-300 transition shadow-[3px_3px_0_0_rgba(0,0,0,0.7)] cursor-pointer tracking-wider uppercase border-2 border-black glow-cyan"
                 >
                   ♾️ MODO INFINITO (ENDLESS)
                 </button>
 
-                <div className="grid grid-cols-2 gap-2 pt-0.5">
+                <div className="grid grid-cols-2 gap-1.5 pt-0.5">
                   <button
                     onClick={() => {
                       soundEngine.playUiClick();
                       onOpenLeaderboard();
                     }}
-                    className="py-1.5 bg-black/50 hover:bg-[#ffd700] hover:text-black text-[#ffd700] border border-[#ffd700]/60 font-black text-[11px] rounded-sm transition cursor-pointer tracking-wider"
+                    className="py-1.5 bg-black/50 hover:bg-[#ffd700] hover:text-black text-[#ffd700] border border-[#ffd700]/60 font-black text-[10px] sm:text-[11px] rounded-sm transition cursor-pointer tracking-wider"
                   >
                     🏆 RANKING TOP 10
                   </button>
@@ -252,19 +252,19 @@ export const MainMenu: React.FC<Props> = ({
                       soundEngine.playUiClick();
                       setShowStageSelect(true);
                     }}
-                    className="py-1.5 bg-purple-950/60 hover:bg-purple-900 text-purple-200 border border-purple-500/50 font-bold text-[11px] rounded-sm transition cursor-pointer tracking-wider"
+                    className="py-1.5 bg-purple-950/60 hover:bg-purple-900 text-purple-200 border border-purple-500/50 font-bold text-[10px] sm:text-[11px] rounded-sm transition cursor-pointer tracking-wider"
                   >
                     🌌 SELECIONAR FASE
                   </button>
                 </div>
 
-                <div className="grid grid-cols-3 gap-1.5 pt-0.5">
+                <div className="grid grid-cols-3 gap-1 pt-0.5">
                   <button
                     onClick={() => {
                       soundEngine.playUiClick();
                       onOpenHowToPlay();
                     }}
-                    className="py-1.5 bg-black/50 hover:bg-gray-900 text-cyan-300 border border-cyan-500/40 font-bold text-[11px] rounded-sm transition cursor-pointer"
+                    className="py-1 bg-black/50 hover:bg-gray-900 text-cyan-300 border border-cyan-500/40 font-bold text-[10px] sm:text-[11px] rounded-sm transition cursor-pointer"
                   >
                     📖 AJUDA
                   </button>
@@ -273,7 +273,7 @@ export const MainMenu: React.FC<Props> = ({
                       soundEngine.playUiClick();
                       onOpenOptions();
                     }}
-                    className="py-1.5 bg-black/50 hover:bg-gray-900 text-cyan-300 border border-cyan-500/40 font-bold text-[11px] rounded-sm transition cursor-pointer"
+                    className="py-1 bg-black/50 hover:bg-gray-900 text-cyan-300 border border-cyan-500/40 font-bold text-[10px] sm:text-[11px] rounded-sm transition cursor-pointer"
                   >
                     ⚙️ OPÇÕES
                   </button>
@@ -282,51 +282,53 @@ export const MainMenu: React.FC<Props> = ({
                       soundEngine.playUiClick();
                       if (onOpenCredits) onOpenCredits();
                     }}
-                    className="py-1.5 bg-purple-950/80 hover:bg-purple-900 text-[#ffd700] border border-[#ffd700]/50 font-bold text-[11px] rounded-sm transition cursor-pointer"
+                    className="py-1 bg-purple-950/80 hover:bg-purple-900 text-[#ffd700] border border-[#ffd700]/50 font-bold text-[10px] sm:text-[11px] rounded-sm transition cursor-pointer"
                   >
                     🎬 CRÉDITOS
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="mt-2 space-y-2 w-full max-w-sm mx-auto">
-                <h3 className="text-cyan-400 font-bold text-[11px] uppercase tracking-[0.2em] mb-2 glow-cyan">
+              <div className="mt-1 space-y-1.5 w-full max-w-sm mx-auto">
+                <h3 className="text-cyan-400 font-bold text-[10px] sm:text-[11px] uppercase tracking-[0.2em] mb-1 glow-cyan">
                   ESCOLHA SUA FASE:
                 </h3>
-                {STAGES.map((st, idx) => {
-                  const unlocked = isStageUnlocked(idx);
-                  return (
-                    <button
-                      key={st.id}
-                      disabled={!unlocked}
-                      onClick={() => handleStageClick(idx)}
-                      className={`w-full p-2 border rounded-sm text-left transition flex justify-between items-center group ${
-                        unlocked
-                          ? 'bg-black/80 hover:bg-[#ffd700] hover:text-black border-white/20 cursor-pointer'
-                          : 'bg-black/40 border-white/10 opacity-50 cursor-not-allowed'
-                      }`}
-                    >
-                      <div>
-                        <div className={`font-black text-xs ${unlocked ? 'group-hover:text-black text-white' : 'text-gray-400'}`}>
-                          {st.title}
+                <div className="max-h-[45vh] overflow-y-auto space-y-1 pr-1 scrollbar-none">
+                  {STAGES.map((st, idx) => {
+                    const unlocked = isStageUnlocked(idx);
+                    return (
+                      <button
+                        key={st.id}
+                        disabled={!unlocked}
+                        onClick={() => handleStageClick(idx)}
+                        className={`w-full p-1.5 border rounded-sm text-left transition flex justify-between items-center group ${
+                          unlocked
+                            ? 'bg-black/80 hover:bg-[#ffd700] hover:text-black border-white/20 cursor-pointer'
+                            : 'bg-black/40 border-white/10 opacity-50 cursor-not-allowed'
+                        }`}
+                      >
+                        <div>
+                          <div className={`font-black text-xs ${unlocked ? 'group-hover:text-black text-white' : 'text-gray-400'}`}>
+                            {st.title}
+                          </div>
+                          <div className={`text-[9px] ${unlocked ? 'text-purple-300 group-hover:text-black/80' : 'text-gray-500 font-semibold'}`}>
+                            {unlocked ? st.subtitle : `🔒 BLOQUEADA — CONCLUA FASE ${idx}`}
+                          </div>
                         </div>
-                        <div className={`text-[9px] ${unlocked ? 'text-purple-300 group-hover:text-black/80' : 'text-gray-500 font-semibold'}`}>
-                          {unlocked ? st.subtitle : `🔒 BLOQUEADA — CONCLUA FASE ${idx}`}
-                        </div>
-                      </div>
-                      <span className={`font-bold text-xs ${unlocked ? 'text-[#ffd700] group-hover:text-black' : 'text-gray-500'}`}>
-                        {unlocked ? '▶' : '🔒'}
-                      </span>
-                    </button>
-                  );
-                })}
+                        <span className={`font-bold text-xs ${unlocked ? 'text-[#ffd700] group-hover:text-black' : 'text-gray-500'}`}>
+                          {unlocked ? '▶' : '🔒'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
 
                 <button
                   onClick={() => {
                     soundEngine.playUiClick();
                     setShowStageSelect(false);
                   }}
-                  className="w-full py-1.5 bg-gray-900 hover:bg-gray-800 text-[#ffd700] border border-white/10 text-xs font-bold rounded-sm mt-2 cursor-pointer"
+                  className="w-full py-1 bg-gray-900 hover:bg-gray-800 text-[#ffd700] border border-white/10 text-xs font-bold rounded-sm mt-1 cursor-pointer"
                 >
                   ← VOLTAR
                 </button>
@@ -336,11 +338,11 @@ export const MainMenu: React.FC<Props> = ({
         </div>
 
         {/* Footer message - Raised above all shadows with distinct backdrop */}
-        <footer className="relative z-40 text-center flex flex-col items-center gap-0.5 shrink-0 py-1.5 px-4 bg-black/70 border border-[#ffd700]/30 rounded-sm backdrop-blur-md shadow-xl my-1">
-          <p className="text-[#ffd700] text-[10px] sm:text-xs md:text-sm font-black tracking-[0.08em] sm:tracking-[0.15em] glow-gold leading-tight">
+        <footer className="relative z-40 text-center flex flex-col items-center gap-0.5 shrink-0 py-1 px-3 bg-black/70 border border-[#ffd700]/30 rounded-sm backdrop-blur-md shadow-xl my-0.5">
+          <p className="text-[#ffd700] text-[9px] sm:text-xs font-black tracking-[0.08em] sm:tracking-[0.15em] glow-gold leading-tight">
             "MANTENHA A PRESENÇA — VOCÊ NUNCA FOI A LUGAR NENHUM"
           </p>
-          <div className="flex items-center justify-center gap-2 text-[9px] sm:text-[10px] text-white/80 font-mono tracking-wider leading-tight">
+          <div className="flex items-center justify-center gap-2 text-[9px] text-white/80 font-mono tracking-wider leading-tight">
             <span>© Evangelho das Dimenúveis</span>
             <span>•</span>
             <a
@@ -349,6 +351,8 @@ export const MainMenu: React.FC<Props> = ({
             >
               Contato
             </a>
+            <span>•</span>
+            <span className="text-[#ffd700] font-bold">v1.1</span>
           </div>
         </footer>
       </div>
