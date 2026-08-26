@@ -27,7 +27,8 @@ export const STAGES: StageConfig[] = [
     id: 1,
     title: 'STAGE 1 — THE MATERIAL WORLD',
     subtitle: '1 Minuto — Ascenda pelo Plano Astral',
-    targetDistance: 6300, // 60s (1 min) @ scrollSpeed 3.5 (105 dist/s)
+    targetDistance: 6300,
+    durationSeconds: 60,
     scrollSpeed: 3.5,
     bgGradStart: '#0d0826',
     bgGradEnd: '#1e0c38',
@@ -41,7 +42,8 @@ export const STAGES: StageConfig[] = [
     id: 2,
     title: 'STAGE 2 — THE ELEMENTAL CURRENT',
     subtitle: '2 Minutos — Correntes de Fogo, Ar, Água e Terra',
-    targetDistance: 14400, // 120s (2 min) @ scrollSpeed 4.0 (120 dist/s)
+    targetDistance: 14400,
+    durationSeconds: 120,
     scrollSpeed: 4.0,
     bgGradStart: '#14062e',
     bgGradEnd: '#2e0a42',
@@ -55,7 +57,8 @@ export const STAGES: StageConfig[] = [
     id: 3,
     title: 'STAGE 3 — THE VOID',
     subtitle: '3 Minutos — Espaço Profundo & Sons Sagrados',
-    targetDistance: 24300, // 180s (3 min) @ scrollSpeed 4.5 (135 dist/s)
+    targetDistance: 24300,
+    durationSeconds: 180,
     scrollSpeed: 4.5,
     bgGradStart: '#080018',
     bgGradEnd: '#12002b',
@@ -69,7 +72,8 @@ export const STAGES: StageConfig[] = [
     id: 4,
     title: 'STAGE 4 — THE SPIRAL',
     subtitle: '4 Minutos — Galáxias Surreais & Espirais Douradas',
-    targetDistance: 36000, // 240s (4 min) @ scrollSpeed 5.0 (150 dist/s)
+    targetDistance: 36000,
+    durationSeconds: 240,
     scrollSpeed: 5.0,
     bgGradStart: '#1d003b',
     bgGradEnd: '#3b0042',
@@ -83,7 +87,8 @@ export const STAGES: StageConfig[] = [
     id: 5,
     title: 'STAGE 5 — THE PLEROMA',
     subtitle: '5 Minutos — Entre na Espiral do Vazio & Vença',
-    targetDistance: 49500, // 300s (5 min) @ scrollSpeed 5.5 (165 dist/s)
+    targetDistance: 49500,
+    durationSeconds: 300,
     scrollSpeed: 5.5,
     bgGradStart: '#26004d',
     bgGradEnd: '#550066',
@@ -100,6 +105,7 @@ export const INFINITE_STAGE_CONFIG: StageConfig = {
   title: 'INFINITE COSMOS — ENDLESS RUN',
   subtitle: 'Survive the Infinite Void',
   targetDistance: Infinity,
+  durationSeconds: Infinity,
   scrollSpeed: 4.0,
   bgGradStart: '#050212',
   bgGradEnd: '#18032b',
@@ -131,6 +137,7 @@ export class GameEngine {
 
   public currentStageIndex: number = 0;
   public currentDistance: number = 0;
+  public stageTimeElapsed: number = 0;
   public voidPinsCollected: number = 0;
 
   public getCurrentStageConfig(): StageConfig {
@@ -330,6 +337,7 @@ export class GameEngine {
     this.currentStageIndex = stageIndex;
     this.isInfiniteMode = isInfiniteMode;
     this.currentDistance = 0;
+    this.stageTimeElapsed = 0;
     this.isGameOver = false;
     this.isStageClear = false;
     this.isVictory = false;
@@ -338,6 +346,9 @@ export class GameEngine {
     this.voidPinsCollected = 0;
     this.inputLift = false;
 
+    const diff = this.settings?.difficulty || 'normal';
+    const startingLives = diff === 'easy' ? 5 : diff === 'hard' ? 2 : 3;
+
     this.player = {
       x: this.width * 0.18,
       y: this.height * 0.5,
@@ -345,8 +356,8 @@ export class GameEngine {
       vy: 0,
       width: 70,
       height: 40,
-      lives: 3,
-      maxLives: 3,
+      lives: startingLives,
+      maxLives: startingLives,
       abidarEnergy: 100,
       score: 0,
       combo: 1,
@@ -392,6 +403,7 @@ export class GameEngine {
     if (this.currentStageIndex + 1 < STAGES.length) {
       this.currentStageIndex++;
       this.currentDistance = 0;
+      this.stageTimeElapsed = 0;
       this.isStageClear = false;
       this.isGameOver = false;
 
@@ -472,6 +484,7 @@ export class GameEngine {
     // Scroll distance advancement
     const speedMult = this.player.speedBoostActive ? 1.5 : this.player.timeSlowActive ? 0.6 : 1.0;
     this.currentDistance += stage.scrollSpeed * speedMult * dt * 30;
+    this.stageTimeElapsed += dt;
 
     // --- PLAYER MOVEMENT (TAP/CLICK TO RISE, RELEASE TO FALL, HOVER TO ABIDE) ---
     const gravity = 700; // Constant downward gravity force
@@ -506,12 +519,19 @@ export class GameEngine {
     // Off-screen Fall Death
     const deathY = this.height + 25;
     if (this.player.y > deathY && !this.isGameOver && !this.isVictory && !this.isStageClear) {
-      this.player.lives = 0;
-      this.isGameOver = true;
-      soundEngine.playHitSound();
-      soundEngine.stopMusic();
-      this.saveHighScore();
-      this.addFloatingText(this.player.x, this.height - 40, 'FELL OFF THE COSMOS!', '#ff2200', 2.0);
+      if (this.settings?.activeCheats?.includes('IAMTHEMONAD')) {
+        this.player.y = this.height - 70;
+        this.player.vy = -380;
+        this.addFloatingText(this.player.x, this.height - 40, '👑 GOD MODE BOUNCE!', '#ffd700', 1.5);
+        soundEngine.playStarSound();
+      } else {
+        this.player.lives = 0;
+        this.isGameOver = true;
+        soundEngine.playHitSound();
+        soundEngine.stopMusic();
+        this.saveHighScore();
+        this.addFloatingText(this.player.x, this.height - 40, 'FELL OFF THE COSMOS!', '#ff2200', 2.0);
+      }
     }
 
     // --- ABIDE DETECTION ---
@@ -587,11 +607,41 @@ export class GameEngine {
       if (p.x < -140) p.x = this.width + 140;
     });
 
+    // --- CHEATS LOGIC IN UPDATE ---
+    const isMotherGaia = this.settings?.activeCheats?.includes('MOTHERGAIA');
+    if (isMotherGaia) {
+      this.player.magnetActive = true;
+    }
+
+    if (this.settings?.activeCheats?.includes('IHEARTYOU')) {
+      if (this.player.lives === 1 && !this.isGameOver && !this.isVictory && !this.isStageClear) {
+        const hasHeartOnScreen = this.collectibles.some((c) => c.active && c.type === 'heart');
+        if (!hasHeartOnScreen) {
+          this.collectibles.push({
+            id: 'cheat_heart_' + Math.random(),
+            x: this.width + 60,
+            y: Math.random() * (this.height - 200) + 100,
+            width: 24,
+            height: 24,
+            vx: -stage.scrollSpeed * 30,
+            vy: 0,
+            active: true,
+            type: 'heart',
+            pulsePhase: 0,
+            rotation: 0,
+            value: 100
+          });
+          this.addFloatingText(this.width / 2, 70, '❤️ IHEARTYOU: CORAÇÃO DE EMERGÊNCIA! ❤️', '#ff2255', 1.8);
+          soundEngine.playStarSound();
+        }
+      }
+    }
+
     // --- SPAWNING OBJECTS ---
     this.spawnEntities(stage, dt);
 
     // --- UPDATE COLLECTIBLES & MAGNET EFFECT ---
-    const magnetActive = this.player.magnetActive || this.player.spiralModeTime > 0;
+    const magnetActive = this.player.magnetActive || this.player.spiralModeTime > 0 || isMotherGaia;
     this.collectibles.forEach((c) => {
       if (!c.active) return;
       c.x -= stage.scrollSpeed * speedMult * dt * 60;
@@ -601,9 +651,10 @@ export class GameEngine {
         const dx = this.player.x - c.x;
         const dy = this.player.y - c.y;
         const dist = Math.hypot(dx, dy);
-        if (dist < 220) {
-          c.x += (dx / dist) * 350 * dt;
-          c.y += (dy / dist) * 350 * dt;
+        const magnetRange = isMotherGaia ? 360 : 220;
+        if (dist < magnetRange) {
+          c.x += (dx / dist) * 380 * dt;
+          c.y += (dy / dist) * 380 * dt;
         }
       }
 
@@ -759,16 +810,27 @@ export class GameEngine {
     });
     this.floatingTexts = this.floatingTexts.filter((ft) => ft.alpha > 0);
 
+    // Calculate stage completion ratio based on distance and elapsed time
+    const stageDur = stage.durationSeconds || 300;
+    const stageProgress = Math.min(
+      1.0,
+      Math.max(
+        this.currentDistance / stage.targetDistance,
+        this.stageTimeElapsed / stageDur
+      )
+    );
+
     // --- STAGE COMPLETION & VOID ENTRY MECHANIC ---
     if (stage.hasBoss && !this.isVictory) {
-      if (!this.bossState.active && (this.currentDistance >= stage.targetDistance * 0.75 || this.currentDistance >= stage.targetDistance)) {
+      // Spawn Great Void Spiral as stage 5 reaches 90% (4m 30s) or target distance
+      if (!this.bossState.active && (stageProgress >= 0.90 || this.stageTimeElapsed >= stageDur - 30)) {
         this.initBoss();
       }
     }
 
     if (this.bossState.active) {
       this.updateBoss(dt);
-    } else if (!stage.hasBoss && this.currentDistance >= stage.targetDistance && !this.isStageClear && !this.isVictory) {
+    } else if (!stage.hasBoss && stageProgress >= 1.0 && !this.isStageClear && !this.isVictory) {
       this.isStageClear = true;
       unlockNextStage(this.currentStageIndex);
       soundEngine.playStageClearSound();
@@ -976,6 +1038,16 @@ export class GameEngine {
         this.addFloatingText(this.player.x, this.player.y - 30, '🌱 EARTH MAGNET!', '#22cc44', 1.6);
         this.spawnElementalBurst(c.x, c.y, 'earth');
       }
+    } else if (c.type === 'heart') {
+      if (this.player.lives < this.player.maxLives) {
+        this.player.lives++;
+        this.addFloatingText(c.x, c.y - 30, '+1 CORAÇÃO! ❤️', '#ff2255', 1.6);
+        soundEngine.playStarSound();
+      } else {
+        this.player.score += 500;
+        this.addFloatingText(c.x, c.y - 30, '+500 PTS!', '#ffd700', 1.2);
+        soundEngine.playStarSound();
+      }
     }
 
     // Sparkle particles
@@ -1104,11 +1176,6 @@ export class GameEngine {
         value: 200
       });
     });
-
-    // In Stage 5, completing the IEOUA sequence also triggers entry into the Great Void!
-    if (this.currentStageIndex === STAGES.length - 1 && !this.isVictory) {
-      this.triggerVoidEntryVictory();
-    }
   }
 
   // --- VOID ENTRY & COSMIC VICTORY ---
@@ -1144,6 +1211,14 @@ export class GameEngine {
   // --- OBSTACLE HIT ---
 
   private hitObstacle(o: Obstacle) {
+    if (this.settings?.activeCheats?.includes('IAMTHEMONAD')) {
+      o.active = false;
+      this.player.invulnerableTime = 0.5;
+      this.addFloatingText(this.player.x, this.player.y - 30, '👑 GOD MODE ABSORB!', '#ffd700', 1.4);
+      soundEngine.playStarSound();
+      return;
+    }
+
     if (this.player.shieldActive) {
       this.player.shieldActive = false;
       o.active = false;
@@ -1264,16 +1339,17 @@ export class GameEngine {
 
     // Proximity check between player and Great Void Spiral
     const distToSpiral = Math.hypot(this.player.x - this.bossState.x, this.player.y - this.bossState.y);
+    const stage = this.getCurrentStageConfig();
+    const stageDur = stage.durationSeconds || 300;
 
     // Player enters Great Void if:
     // 1. Collected 5 void bowling pins
-    // 2. Direct contact with spiral event horizon (< 110px)
-    // 3. Boss timer elapsed or stage target distance exceeded
+    // 2. Direct contact with spiral event horizon (< 140px)
+    // 3. Stage 5 target duration reached (5 mins) AND spiral has been visible for at least 6 seconds
     const isTranscendenceReady =
       this.voidPinsCollected >= PINS_REQUIRED ||
-      distToSpiral < 110 ||
-      this.bossState.phaseTimer > 12.0 ||
-      this.currentDistance >= (STAGES[4]?.targetDistance || 9000) + 500;
+      distToSpiral < 140 ||
+      (this.stageTimeElapsed >= stageDur && this.bossState.phaseTimer > 6.0);
 
     if (isTranscendenceReady) {
       // Smoothly draw the Dude towards the center of the Spiral
@@ -1349,7 +1425,7 @@ export class GameEngine {
     pixelRenderer.drawFloatingTexts(this.ctx, this.floatingTexts);
 
     // 8. Retro HUD
-    pixelRenderer.drawHUD(this.ctx, this.width, this.height, this.player, stage, this.gameTime, this.currentDistance);
+    pixelRenderer.drawHUD(this.ctx, this.width, this.height, this.player, stage, this.gameTime, this.currentDistance, this.stageTimeElapsed);
   }
 
   public destroy() {

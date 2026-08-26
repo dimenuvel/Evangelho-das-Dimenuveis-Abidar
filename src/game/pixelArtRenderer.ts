@@ -734,6 +734,21 @@ export class PixelArtRenderer {
         // Elemental Orbs (Fire, Air, Water, Earth)
         const elemType = c.type.replace('elemental_', '');
         this.drawElementalOrb(ctx, cx, cy + bobY, elemType, gameTime);
+      } else if (c.type === 'heart') {
+        // Emergency Heart Collectible
+        ctx.save();
+        ctx.shadowColor = '#ff2255';
+        ctx.shadowBlur = 12;
+        ctx.fillStyle = '#ff2255';
+        const hx = cx - 10;
+        const hy = cy - 10 + bobY;
+        ctx.fillRect(hx, hy + 3, 20, 12);
+        ctx.fillRect(hx + 2, hy, 6, 17);
+        ctx.fillRect(hx + 12, hy, 6, 17);
+        // Highlight
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(hx + 4, hy + 3, 3, 3);
+        ctx.restore();
       }
 
       ctx.restore();
@@ -1241,7 +1256,8 @@ export class PixelArtRenderer {
     player: PlayerState,
     stage: StageConfig,
     gameTime: number,
-    currentDistance: number = 0
+    currentDistance: number = 0,
+    stageTimeElapsed: number = 0
   ) {
     ctx.save();
 
@@ -1285,12 +1301,12 @@ export class PixelArtRenderer {
 
     for (let i = 0; i < player.maxLives; i++) {
       ctx.fillStyle = i < player.lives ? '#ff2255' : '#442233';
-      const hx = 54 + i * 18;
+      const hx = 54 + i * 15;
       const hy = 22;
       // Pixel Heart
-      ctx.fillRect(hx, hy + 2, 12, 8);
-      ctx.fillRect(hx + 2, hy, 3, 12);
-      ctx.fillRect(hx + 7, hy, 3, 12);
+      ctx.fillRect(hx, hy + 2, 11, 7);
+      ctx.fillRect(hx + 1, hy, 3, 10);
+      ctx.fillRect(hx + 7, hy, 3, 10);
     }
 
     // --- 2. STAGE INFO ON 2 LINES (x: 135..265) ---
@@ -1323,7 +1339,11 @@ export class PixelArtRenderer {
 
     // Line 3: Mini Stage Progress Bar
     if (!isInfinite && stage.targetDistance > 0) {
-      const pRatio = Math.min(1.0, Math.max(0, currentDistance / stage.targetDistance));
+      const dur = stage.durationSeconds || 300;
+      const pRatio = Math.min(
+        1.0,
+        Math.max(0, currentDistance / stage.targetDistance, stageTimeElapsed / dur)
+      );
       ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
       ctx.fillRect(135, 36, 120, 4);
       ctx.fillStyle = pRatio >= 1.0 ? '#00ffff' : '#ffd700';

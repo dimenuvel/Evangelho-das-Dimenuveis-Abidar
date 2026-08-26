@@ -30,7 +30,11 @@ export default function App() {
   const [settings, setSettings] = useState<GameSettings>(() => {
     try {
       const saved = localStorage.getItem('abidar_settings');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (!parsed.difficulty) parsed.difficulty = 'normal';
+        return parsed;
+      }
     } catch {
       // ignore
     }
@@ -39,7 +43,8 @@ export default function App() {
       musicVolume: 0.5,
       sfxVolume: 0.7,
       scanlinesEnabled: true,
-      touchControlMode: 'drag'
+      touchControlMode: 'drag',
+      difficulty: 'normal'
     };
   });
 
