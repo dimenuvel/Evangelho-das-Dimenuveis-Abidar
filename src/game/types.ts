@@ -11,7 +11,8 @@ export type CollectibleType =
   | 'elemental_fire'
   | 'elemental_air'
   | 'elemental_water'
-  | 'elemental_earth';
+  | 'elemental_earth'
+  | 'heart';
 
 export type VowelLetter = 'I' | 'E' | 'O' | 'U' | 'A';
 
@@ -139,6 +140,7 @@ export interface StageConfig {
   title: string;
   subtitle: string;
   targetDistance: number;
+  durationSeconds: number;
   scrollSpeed: number;
   bgGradStart: string;
   bgGradEnd: string;
@@ -164,10 +166,14 @@ export interface BossState {
   currentRequiredIndex: number;
 }
 
+export type DifficultySetting = 'easy' | 'normal' | 'hard';
+
 export interface GameSettings {
   soundEnabled: boolean;
   musicVolume: number;
   sfxVolume: number;
   scanlinesEnabled: boolean;
   touchControlMode: 'drag' | 'zones' | 'joystick';
+  difficulty?: DifficultySetting;
+  activeCheats?: string[];
 }

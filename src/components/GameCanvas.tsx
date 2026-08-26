@@ -99,6 +99,13 @@ export const GameCanvas: React.FC<Props> = ({
     };
   }, [stageIndex, isInfiniteMode]);
 
+  // Keep engine settings updated if options change
+  useEffect(() => {
+    if (engineRef.current) {
+      engineRef.current.settings = settings;
+    }
+  }, [settings]);
+
   const handleOpenLeaderboardOrNameEntry = () => {
     soundEngine.playUiClick();
     if (!hasPromptedName && score > 0 && isHighScore(score)) {

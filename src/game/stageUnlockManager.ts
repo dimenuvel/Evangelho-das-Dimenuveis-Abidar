@@ -44,6 +44,18 @@ export function unlockNextStage(clearedStageIndex: number): number {
 }
 
 /**
+ * Unlocks all 5 stages in the game.
+ */
+export function unlockAllStages(): number {
+  try {
+    localStorage.setItem(UNLOCKED_STAGES_KEY, '5');
+    return 5;
+  } catch {
+    return getUnlockedStageCount();
+  }
+}
+
+/**
  * Checks if a 0-based stage index is unlocked.
  */
 export function isStageUnlocked(stageIndex: number): boolean {

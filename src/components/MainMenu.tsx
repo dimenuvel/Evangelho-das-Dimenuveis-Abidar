@@ -396,7 +396,7 @@ export const MainMenu: React.FC<Props> = ({
               Contato
             </a>
             <span>•</span>
-            <span className="text-[#ffd700] font-bold">v1.2.2</span>
+            <span className="text-[#ffd700] font-bold">v1.5</span>
           </div>
         </footer>
       </div>
